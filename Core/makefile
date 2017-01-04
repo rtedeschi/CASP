@@ -1,8 +1,13 @@
-link: ControlModule.o Main.o
-	cl /Fe"dist/build_%DATE:~-4%-%DATE:~4,2%-%DATE:~7,2%_%TIME:~0,2%.%TIME:~3,2%.%TIME:~6,2%.exe" obj/*.o
-	cl /Fe"Latest_Build.exe" obj/*.o
+link: Timestamp.h ControlModule.o Main.o
+	@cl /Fe"dist/%filename%.exe" obj/*.o
+	@xcopy "dist/%filename%.exe" "CASP.exe*" /F /Y /Q
 Main.o:
-	cl /c src/Main.cpp /Fo"obj/Main.o"
+	@cl /c src/Main.cpp /Fo"obj/Main.o"
 
 ControlModule.o:
-	cl /c src/ControlModule.cpp /Fo"obj/ControlModule.o"
+	@cl /c src/ControlModule.cpp /Fo"obj/ControlModule.o"
+
+Timestamp.h:
+	@echo #ifndef TIMESTAMP>src/Timestamp.h
+	@echo #define TIMESTAMP "%timestamp%">>src/Timestamp.h
+	@echo #endif>>src/Timestamp.h
