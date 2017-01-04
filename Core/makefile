@@ -1,6 +1,6 @@
 link: Timestamp.h ControlModule.o Main.o
-	@cl /Fe"dist/%filename%.exe" obj/*.o
-	@xcopy "dist/%filename%.exe" "CASP.exe*" /F /Y /Q
+	@cl /Fe"%build_path%/%filename%.exe" obj/*.o
+	@xcopy "%build_path%/%filename%.exe" "CASP.exe*" /F /Y /Q
 Main.o:
 	@cl /c src/Main.cpp /Fo"obj/Main.o"
 

@@ -8,7 +8,7 @@ call set second=%%TIME:~6,2%%
 set hour=%hour: =0%
 set filename=build%month%%day%%year%%hour%%minute%%second%
 set timestamp=%month%-%day%-%year% %hour%:%minute%:%second%
-set type=minor_builds
+set type=major_builds
 set build_path=dist/%type%
 
 call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\Tools\vsvars32.bat"
