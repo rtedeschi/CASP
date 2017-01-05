@@ -16,7 +16,7 @@ ControlModule::~ControlModule() {
     
 }
 
-FORMATTED_RESULTS ControlModule::Run(SOURCE_LANGUAGE sourceLanguage, MODULE_ID moduleID, CODE_INPUT codeSnippets, FUNCTION_ARGS functionArgs) {
+FORMATTED_RESULTS ControlModule::Run(SOURCE_LANGUAGE sourceLanguage, MODULE_ID moduleID, CODE_INPUT codeSnippets, ARG_COUNT argCount, FUNCTION_ARGS functionArgs) {
     LANGUAGE_DESCRIPTOR_OBJECT descriptor = NULL;
     CODE_OUTPUT code = NULL;
     MARKUP_OBJECT markup = NULL;
@@ -31,7 +31,7 @@ FORMATTED_RESULTS ControlModule::Run(SOURCE_LANGUAGE sourceLanguage, MODULE_ID m
 
     }
 
-    results = Execute(markup, moduleID, functionArgs);
+    results = Execute(markup, moduleID, argCount, functionArgs);
 
     return results;
 }
@@ -75,9 +75,9 @@ MARKUP_OBJECT ControlModule::Parse(CODE_OUTPUT code, LANGUAGE_DESCRIPTOR_OBJECT 
     return markup;
 }
 
-FORMATTED_RESULTS ControlModule::Execute(MARKUP_OBJECT markup, MODULE_ID moduleID, FUNCTION_ARGS functionArgs) {
+FORMATTED_RESULTS ControlModule::Execute(MARKUP_OBJECT markup, MODULE_ID moduleID, ARG_COUNT argCount, FUNCTION_ARGS functionArgs) {
     MODULE_REF ref = ModuleRetrieval(moduleID);
-    MODULE_RESPONSE response = ModuleExecution(ref, markup, functionArgs);
+    MODULE_RESPONSE response = ModuleExecution(ref, markup, argCount, functionArgs);
     FORMATTED_RESULTS results = FormatOutput(response);
     return results;
 }
@@ -90,7 +90,7 @@ MODULE_REF ControlModule::ModuleRetrieval(MODULE_ID moduleID) {
     return ref;
 }
 
-MODULE_RESPONSE ControlModule::ModuleExecution(MODULE_REF moduleRef, MARKUP_OBJECT markup, FUNCTION_ARGS functionArgs) {
+MODULE_RESPONSE ControlModule::ModuleExecution(MODULE_REF moduleRef, MARKUP_OBJECT markup, ARG_COUNT argCount, FUNCTION_ARGS functionArgs) {
     MODULE_RESPONSE response = NULL;
 
     try {

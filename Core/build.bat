@@ -31,4 +31,4 @@ IF "%error%"=="0" (
 )
 
 :end
-pause
+::pause
