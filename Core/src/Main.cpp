@@ -12,7 +12,7 @@
 
 #define OTHER 0
 #define FN_ARG 1
-#define MODULE_ID 2
+#define MODULE 2
 #define LANGUAGE 3
 int SIZES[] { 0, 6, 10, 12 };
 
@@ -42,7 +42,7 @@ int main(int argCount, char** argArray)
             // TODO need to 
             fnArgCount++;
         }
-        else if (type == MODULE_ID)
+        else if (type == MODULE)
         {
             moduleID = value;
         }
@@ -60,7 +60,7 @@ int main(int argCount, char** argArray)
         }
     }
 
-    ControlModule control();
+    ControlModule control = ControlModule();
     control.Run(sourceLanguage, moduleID, codeSource, fnArgCount, fnArgs);
 }
 
@@ -69,7 +69,7 @@ int paramType(string input) {
     if (input.find("/sourcelang=") == 0)
         type = LANGUAGE;
     else if (input.find("/moduleid=") == 0)
-        type = MODULE_ID;
+        type = MODULE;
     else if (input.find("/args=") == 0)
         type = FN_ARG;
     return type;
