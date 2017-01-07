@@ -32,10 +32,10 @@ call set error=%%ERRORLEVEL%%
 
 IF "%error%"=="0" (
 	if "%log%"=="1" (
-		xcopy "CASP.exe" "%build_path%/%filename%.exe*" /F /Y /Q
-		echo "dist/%filename%.exe">"logs/%type%/%filename%.txt"
-		echo by %USERNAME%>>"logs/%type%/%filename%.txt"
-		echo on %timestamp%>>"logs/%type%/%filename%.txt"
+		xcopy "CASP.exe" "%build_path%/%USERNAME%.%filename%.exe*" /F /Y /Q
+		echo "dist/%filename%.exe">"logs/%type%/%USERNAME%.%filename%.txt"
+		echo by %USERNAME%>>"logs/%type%/%USERNAME%.%filename%.txt"
+		echo on %timestamp%>>"logs/%type%/%USERNAME%.%filename%.txt"
 	)
 	echo.
 	echo Build Successful! ^:^)
