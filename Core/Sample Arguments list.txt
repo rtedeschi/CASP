@@ -1,1 +1,1 @@
-casp /sourcelang="c++" /moduleid="some module" /args="/targetlang=\"java\"" /args="/anotherarg=\"14\""
+casp /sourcelang="c++" /moduleid="some module" /args="/targetlang=\"java\"" /args="/anotherarg=\"14\"" /code="int i = 0;"

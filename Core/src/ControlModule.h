@@ -14,6 +14,7 @@
  */
 #define SOURCE_LANGUAGE string
 #define MODULE_ID std::string
+#define CODE_COUNT int
 #define CODE_INPUT std::string*
 #define ARG_COUNT int
 #define FUNCTION_ARGS std::string*
@@ -31,6 +32,7 @@
 #define MODULE_REF void*
 
 #include <string>
+#include "../shared/LanguageDescriptor/LanguageDescriptor.h"
 
 using namespace std;
 
@@ -38,11 +40,11 @@ class ControlModule {
     public:
         ControlModule();
         ~ControlModule();
-        FORMATTED_RESULTS Run(SOURCE_LANGUAGE, MODULE_ID, CODE_INPUT, ARG_COUNT, FUNCTION_ARGS);
+        FORMATTED_RESULTS Run(SOURCE_LANGUAGE, MODULE_ID, CODE_COUNT, CODE_INPUT, ARG_COUNT, FUNCTION_ARGS);
 
     private:
         LANGUAGE_DESCRIPTOR_OBJECT GetLanguageDescriptor(SOURCE_LANGUAGE) throw (std::string);
-        bool ValidateSourceLanguage(SOURCE_LANGUAGE); // is this even necessary?...
+        bool ValidateSourceLanguage(SOURCE_LANGUAGE);
         LANGUAGE_DESCRIPTOR_OBJECT ReadLanguageFile(SOURCE_LANGUAGE) throw (std::string);
         CODE_OUTPUT CoalesceCode(CODE_INPUT); // is this necessary?..
         MARKUP_OBJECT Parse(CODE_OUTPUT, LANGUAGE_DESCRIPTOR_OBJECT);

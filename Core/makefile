@@ -1,4 +1,4 @@
-link: Timestamp.h ControlModule.o Main.o
+link: Timestamp.h LanguageDescriptor.o ControlModule.o Main.o
 	@cl /Fe"CASP.exe" obj/*.o
 
 Main.o:
@@ -6,6 +6,9 @@ Main.o:
 
 ControlModule.o:
 	@cl /c src/ControlModule.cpp /Fo"obj/ControlModule.o"
+
+LanguageDescriptor.o:
+	@cl /c shared/LanguageDescriptor/LanguageDescriptor.cpp /Fo"obj/LanguageDescriptor.o
 
 Timestamp.h:
 	@echo /*>src/Timestamp.h

@@ -16,7 +16,12 @@ ControlModule::~ControlModule() {
     
 }
 
-FORMATTED_RESULTS ControlModule::Run(SOURCE_LANGUAGE sourceLanguage, MODULE_ID moduleID, CODE_INPUT codeSnippets, ARG_COUNT argCount, FUNCTION_ARGS functionArgs) {
+FORMATTED_RESULTS ControlModule::Run(SOURCE_LANGUAGE sourceLanguage, MODULE_ID moduleID, CODE_COUNT codeCount, CODE_INPUT codeSnippets, ARG_COUNT argCount, FUNCTION_ARGS functionArgs) {
+
+    cout << codeCount;
+    for (int i = 0; i < codeCount; i++)
+        cout << codeSnippets[i];
+
     LANGUAGE_DESCRIPTOR_OBJECT descriptor = NULL;
     CODE_OUTPUT code = NULL;
     MARKUP_OBJECT markup = NULL;

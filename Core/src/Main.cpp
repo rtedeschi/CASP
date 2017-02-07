@@ -9,27 +9,33 @@
 #include "Timestamp.h"
 #include <iostream>
 #include <string>
+#include <list>
 
 #define OTHER 0
 #define FN_ARG 1
 #define MODULE 2
 #define LANGUAGE 3
-int SIZES[] { 0, 6, 10, 12 };
+#define CODE 4
+#define CODE_F 5
+int SIZES[] { 0, 6, 10, 12, 6, 7 };
 
 int paramType(string);
 string parseParam(string, int);
 string unescapeCharacters(string);
+string ReadFile(string filename);
+
+template<typename T> 
+void listToArray(list<T>, T**);
 
 int main(int argCount, char** argArray)
 {
     cout << "Code Analyzer Software Package (CASP)\n";
     cout << "Current as of " << TIMESTAMP << "\n";
 
-    string* fnArgs = NULL;
-    string* codeSource = NULL;
+    list<string> fnArgs;
+    list<string> codeSource;
     string sourceLanguage;
     string moduleID;
-    int fnArgCount = 0;
 
     for (int i = 1; i < argCount; i++) 
     {
@@ -39,8 +45,7 @@ int main(int argCount, char** argArray)
         // cout << "\n" << value;
         if (type == FN_ARG) 
         {
-            // TODO need to 
-            fnArgCount++;
+            fnArgs.push_back(value);
         }
         else if (type == MODULE)
         {
@@ -50,10 +55,14 @@ int main(int argCount, char** argArray)
         {
             sourceLanguage = value;
         }
-        // else if (type == CODE_SOURCE)
-        // {
-
-        // }
+        else if (type == CODE)
+        {
+            codeSource.push_back(value);
+        }
+        else if (type == CODE_F)
+        {
+            codeSource.push_back(value);
+        }
         else
         {
             cout << "\nIgnoring unexpected parameter '" << value << "'";
@@ -61,7 +70,31 @@ int main(int argCount, char** argArray)
     }
 
     ControlModule control = ControlModule();
-    control.Run(sourceLanguage, moduleID, codeSource, fnArgCount, fnArgs);
+    string* codeArray;
+    string* fnArgsArray;
+    listToArray(codeSource, &codeArray);
+    listToArray(fnArgs, &fnArgsArray);
+    control.Run(sourceLanguage, moduleID, codeSource.size(), codeArray, fnArgs.size(), fnArgsArray);
+}
+
+template<typename T> 
+void listToArray(list<T> list, T** out) {
+    (*out) = (T*)calloc(list.size(), sizeof(T));
+    copy(list.begin(), list.end(), *out);
+}
+
+string ReadFile(string filename) {
+    FILE* fp = fopen(filename.c_str(), "r");
+    string filetext = "";
+
+    if (fp != NULL) {
+        char c;
+        while ((c = fgetc(fp)) != EOF) {
+            filetext += c;
+        }
+    }
+
+    return filetext;
 }
 
 int paramType(string input) {
@@ -72,6 +105,10 @@ int paramType(string input) {
         type = MODULE;
     else if (input.find("/args=") == 0)
         type = FN_ARG;
+    else if (input.find("/code=") == 0)
+        type = CODE;
+    else if (input.find("/codef=") == 0)
+        type = CODE_F;
     return type;
 }
 
