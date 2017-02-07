@@ -29,11 +29,13 @@ void listToArray(list<T>, T**);
 
 int main(int argCount, char** argArray)
 {
-    cout << "Code Analyzer Software Package (CASP)\n";
-    cout << "Current as of " << TIMESTAMP << "\n";
+    cout << "Code Analyzer Software Package (CASP)" << endl;
+    cout << "Build Date: " << TIMESTAMP << endl;
 
     list<string> fnArgs;
     list<string> codeSource;
+    string* codeArray = NULL;
+    string* fnArgsArray = NULL;
     string sourceLanguage;
     string moduleID;
 
@@ -42,39 +44,35 @@ int main(int argCount, char** argArray)
         string arg(argArray[i]);
         int type = paramType(argArray[i]);
         string value = parseParam(argArray[i], type);
-        // cout << "\n" << value;
-        if (type == FN_ARG) 
-        {
-            fnArgs.push_back(value);
-        }
-        else if (type == MODULE)
-        {
-            moduleID = value;
-        }
-        else if (type == LANGUAGE)
-        {
-            sourceLanguage = value;
-        }
-        else if (type == CODE)
-        {
-            codeSource.push_back(value);
-        }
-        else if (type == CODE_F)
-        {
-            codeSource.push_back(value);
-        }
-        else
-        {
-            cout << "\nIgnoring unexpected parameter '" << value << "'";
+        switch (type) {
+            case FN_ARG:
+                fnArgs.push_back(value);
+                break;
+            case MODULE:
+                moduleID = value;
+                break;
+            case LANGUAGE:
+                sourceLanguage = value;
+                break;
+            case CODE_F:
+                value = ReadFile(value);
+            case CODE:
+                codeSource.push_back(value);
+                break;
+            default:
+                cout << "\nIgnoring unexpected parameter '" << value << "'";
         }
     }
 
-    ControlModule control = ControlModule();
-    string* codeArray;
-    string* fnArgsArray;
     listToArray(codeSource, &codeArray);
     listToArray(fnArgs, &fnArgsArray);
+
+    ControlModule control = ControlModule();
     control.Run(sourceLanguage, moduleID, codeSource.size(), codeArray, fnArgs.size(), fnArgsArray);
+
+    cout << "CASP - Operation Complete";
+
+    return 0;
 }
 
 template<typename T> 
