@@ -5,6 +5,7 @@
  *  Created: 1/3/2017 by Ryan Tedeschi
  */ 
 
+#include "../shared/Helpers/Helpers.h"
 #include "ControlModule.h"
 #include "Timestamp.h"
 #include <iostream>
@@ -22,8 +23,6 @@ int SIZES[] { 0, 6, 10, 12, 6, 7 };
 int paramType(string);
 string parseParam(string, int);
 string unescapeCharacters(string);
-string ReadFile(string filename);
-
 template<typename T> 
 void listToArray(list<T>, T**);
 
@@ -55,7 +54,7 @@ int main(int argCount, char** argArray)
                 sourceLanguage = value;
                 break;
             case CODE_F:
-                value = ReadFile(value);
+                value = Helpers::ReadFile(value);
             case CODE:
                 codeSource.push_back(value);
                 break;
@@ -79,21 +78,7 @@ template<typename T>
 void listToArray(list<T> list, T** out) {
     (*out) = (T*)calloc(list.size(), sizeof(T));
     copy(list.begin(), list.end(), *out);
-}
-
-string ReadFile(string filename) {
-    FILE* fp = fopen(filename.c_str(), "r");
-    string filetext = "";
-
-    if (fp != NULL) {
-        char c;
-        while ((c = fgetc(fp)) != EOF) {
-            filetext += c;
-        }
-    }
-
-    return filetext;
-}
+};
 
 int paramType(string input) {
     int type = OTHER;

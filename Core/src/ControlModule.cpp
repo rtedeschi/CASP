@@ -26,6 +26,8 @@ FORMATTED_RESULTS ControlModule::Run(SOURCE_LANGUAGE sourceLanguage, MODULE_ID m
     try {
         descriptor = GetLanguageDescriptor(sourceLanguage);
         code = CoalesceCode(codeSnippets);
+        // TODO temporary passthrough
+        code = codeSnippets;
         markup = Parse(code, descriptor);
     } catch (std::string message) {
         // do something with the message here and don't continue with the execution
@@ -48,10 +50,10 @@ bool ControlModule::ValidateSourceLanguage(SOURCE_LANGUAGE sourceLanguage) {
 }
 
 LANGUAGE_DESCRIPTOR_OBJECT ControlModule::ReadLanguageFile(SOURCE_LANGUAGE sourceLanguage) throw (std::string) {
-    LANGUAGE_DESCRIPTOR_OBJECT languageDescriptor = NULL;
-    
+    LANGUAGE_DESCRIPTOR_OBJECT languageDescriptor;
     try {
         // read and parse file;
+        languageDescriptor = new LanguageDescriptorObject(sourceLanguage);
     } catch (...) {
         
         throw "Language 'sourceLanguage' could not be read"; // TODO change this
@@ -70,6 +72,11 @@ CODE_OUTPUT ControlModule::CoalesceCode(CODE_INPUT codeSnippets) {
 
 MARKUP_OBJECT ControlModule::Parse(CODE_OUTPUT code, LANGUAGE_DESCRIPTOR_OBJECT languageDescriptor) {
     MARKUP_OBJECT markup = NULL;
+
+    vector<Production*> prods = languageDescriptor->GetProductions();
+    markup = new Markup(prods, code[0]); // code[0] is temp
+    
+    markup->Output(0);
 
     // do some gross manipulations to change the input into a markup object
 

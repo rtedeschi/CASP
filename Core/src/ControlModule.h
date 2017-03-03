@@ -13,11 +13,11 @@
  *  Control Module Input parameter type placeholders
  */
 #define SOURCE_LANGUAGE string
-#define MODULE_ID std::string
+#define MODULE_ID string
 #define CODE_COUNT int
-#define CODE_INPUT std::string*
+#define CODE_INPUT string*
 #define ARG_COUNT int
-#define FUNCTION_ARGS std::string*
+#define FUNCTION_ARGS string*
 /*
  *  Control Module Output parameter type placeholders
  */
@@ -26,13 +26,14 @@
  *  Control Module Internal parameter type placeholders
  */
 #define MODULE_RESPONSE void*
-#define LANGUAGE_DESCRIPTOR_OBJECT void*
-#define MARKUP_OBJECT void*
-#define CODE_OUTPUT std::string*
+#define LANGUAGE_DESCRIPTOR_OBJECT LanguageDescriptorObject*
+#define MARKUP_OBJECT Markup*
+#define CODE_OUTPUT string*
 #define MODULE_REF void*
 
 #include <string>
 #include "../shared/LanguageDescriptor/LanguageDescriptor.h"
+#include "../shared/Markup/Markup.h"
 
 using namespace std;
 
