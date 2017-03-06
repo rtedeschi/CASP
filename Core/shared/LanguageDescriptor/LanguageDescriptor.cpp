@@ -10,6 +10,124 @@
 
 using namespace std;
 
+void LanguageDescriptorObject::Parse_Special(string file) {
+    // getpath function ?
+    FILE* temp = fopen(file.c_str(), "r");
+    if (temp == NULL) {
+        temp = fopen((CFG_DIR + file + CFG_EXT).c_str(), "r");
+        if (temp != NULL) {
+            fclose(temp);
+            file = CFG_DIR + file + CFG_EXT;
+        } else {
+            // try PATH environment variable? 
+            cout << "Cannot find language file" << endl;
+        }
+    } else {
+        fclose(temp);
+    }
+    // return file;
+    //
+    string data = Helpers::ReadFile(file); // TODO: file data should probably already be passed in?
+
+    //------------------
+
+    cout << "SEARCHING" << endl;
+    string t = string(data);
+    regex r = regex("^\\([ \t]*([^ \t\n]+)[ \t]*,[ \t]*([^ \t\n]+)[ \t]*\\)[ \t]*->[ \t]*([^ \t\n]+)$");
+    smatch matches;
+
+    while (regex_search(t, matches, r)) {
+        string fromState = matches[1].str();
+        string toState = matches[3].str();
+        string chars = matches[2].str();
+        vector<char> stateTransitions;
+        for (int i = 0; i < chars.size(); i++) {
+            stateTransitions.push_back(chars[i]);
+        }
+
+        stateMachine.AddState(fromState);
+        stateMachine.AddState(toState);
+        stateMachine.AddTransition(fromState, toState, stateTransitions);
+
+        // cout << "State " << matches[1] << " moves to state " << matches[3] << " with any of the following input: " << matches[2] << endl;
+        t = matches.suffix().str();
+    }
+
+    t = string(data);
+    r = regex("^F\\([ \t]*([^ \t\n]+)[ \t]*,[ \t]*([^ \t\n]+)[ \t]*\\)[ \t]*$");
+
+    while (regex_search(t, matches, r)) {
+        string target = matches[1].str();
+        string token = matches[2].str();
+
+        stateMachine.AddGoal(target, token);
+
+        // cout << "State " << matches[1] << " accepts token " << matches[2] << endl;
+        t = matches.suffix().str();
+    }
+
+    t = data;
+    r = regex("^I\\([ \t]*([^ \t\n]+)[ \t]*\\)$");
+
+    if (regex_search(t, matches, r)) {
+        string target = matches[1].str();
+
+        stateMachine.SetInitialState(target);
+
+        // cout << "State " << matches[1] << " is the initial state" << endl;
+        t = matches.suffix().str();
+    }
+
+    // stateMachine.Print();
+    
+}
+
+vector<string> LanguageDescriptorObject::Tokenize(string input) {
+
+    vector<string> tokens;
+
+    string token;
+    string str;
+    stateMachine.Reset();
+    for (int i = 0; i < input.size(); i++) {
+        if (!stateMachine.Transition(input[i])) {
+            token = stateMachine.AcceptedToken();
+            if (token == "ERROR") {
+                if (input[i] != ' ' && input[i] != '\n' && input[i] != '\t')
+                    cout << "State machine encountered an error on character '" << input[i] << "'\n";
+            } else {
+                tokens.push_back(token);
+                vector<char> inputVector = stateMachine.ScannedInput();
+                char* c = (char*)calloc(inputVector.size() + 1, sizeof(char));
+                copy(inputVector.begin(), inputVector.end(), c);
+                c[inputVector.size()] = '\0';
+                str = string(c);
+                cout << "State machine accepted token '" << token << "' with data '" << str << "'\n";
+                i--;
+            }
+            stateMachine.Reset();
+        }
+    }
+
+    // accept the last token
+    token = stateMachine.AcceptedToken();
+    if (token == "ERROR") {
+        cout << "State machine encountered an error on character 'EOF'\n";
+    } else {
+        tokens.push_back(token);
+        vector<char> inputVector = stateMachine.ScannedInput();
+        char* c = (char*)calloc(inputVector.size() + 1, sizeof(char));
+        copy(inputVector.begin(), inputVector.end(), c);
+        c[inputVector.size()] = '\0';
+        str = string(c);
+        cout << "State machine accepted token '" << token << "' with data '" << str << "'\n";
+    }
+    stateMachine.Reset();
+
+    return tokens;
+
+}
+
 LanguageDescriptorObject::LanguageDescriptorObject()
 {
 
@@ -21,7 +139,7 @@ LanguageDescriptorObject::LanguageDescriptorObject(string file)
 }
 
 LanguageDescriptorObject::~LanguageDescriptorObject() {
-
+    
 }
 
 void LanguageDescriptorObject::Parse(string file) {
@@ -165,3 +283,4 @@ vector<Production*> Production::GetContainedProductions() {
     }
     return prods;
 }
+

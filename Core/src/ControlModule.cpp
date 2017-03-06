@@ -54,6 +54,7 @@ LANGUAGE_DESCRIPTOR_OBJECT ControlModule::ReadLanguageFile(SOURCE_LANGUAGE sourc
     try {
         // read and parse file;
         languageDescriptor = new LanguageDescriptorObject(sourceLanguage);
+        languageDescriptor->Parse_Special(sourceLanguage);
     } catch (...) {
         
         throw "Language 'sourceLanguage' could not be read"; // TODO change this
@@ -72,6 +73,8 @@ CODE_OUTPUT ControlModule::CoalesceCode(CODE_INPUT codeSnippets) {
 
 MARKUP_OBJECT ControlModule::Parse(CODE_OUTPUT code, LANGUAGE_DESCRIPTOR_OBJECT languageDescriptor) {
     MARKUP_OBJECT markup = NULL;
+
+    languageDescriptor->Tokenize(code[0]);
 
     vector<Production*> prods = languageDescriptor->GetProductions();
     markup = new Markup(prods, code[0]); // code[0] is temp

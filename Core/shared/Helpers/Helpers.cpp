@@ -24,5 +24,5 @@ namespace Helpers {
 
         return filetext;
     }
-
 }
+

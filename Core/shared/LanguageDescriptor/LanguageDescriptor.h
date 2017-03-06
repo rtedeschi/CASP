@@ -32,6 +32,9 @@ class LanguageDescriptorObject
 
         // void BuildRegex();
         // int[] GetProductions();
+        void Parse_Special(string);
+        vector<string> Tokenize(string);
+
         void Parse(string);
         Production* findProdById(string);
         int getProdIndex(string);
@@ -40,6 +43,7 @@ class LanguageDescriptorObject
 
     private:
         vector<Production*> productions;
+        FSM<char> stateMachine;
 };
 
 class Production {

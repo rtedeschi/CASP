@@ -25,7 +25,7 @@ Markup::Markup(vector<Production*> prods, string data, Markup* parent, Productio
     Parse(prods, data);
 }
 Markup::~Markup() {
-
+    
 }
 
 void Markup::Parse(vector<Production*> prods, string data) {
@@ -38,7 +38,7 @@ void Markup::Parse(vector<Production*> prods, string data) {
     // cout << endl << t << endl << endl;
 
     for (int i = 0; i < numProds; i++) {
-        r = regex(prods[i]->GetRegex());
+        r = regex(prods[i]->GetRegex()); 
         
         while (regex_search (t, matches, r)) {
             // cout << "From '" << data << "' -> Found " << prods[i]->GetId() << " '" << matches[0] << "'" << endl;
