@@ -1,10 +1,10 @@
-/*  
+/*
  *  ControlModule.cpp
  *  Defines the Control Module class, which handles the flow of data between the consumer
  *      and the action modules
- *  
+ *
  *  Created: 1/3/2017 by Ryan Tedeschi
- */ 
+ */
 
 #include "ControlModule.h"
 
@@ -13,7 +13,7 @@ ControlModule::ControlModule() {
 }
 
 ControlModule::~ControlModule() {
-    
+
 }
 
 FORMATTED_RESULTS ControlModule::Run(SOURCE_LANGUAGE sourceLanguage, MODULE_ID moduleID, CODE_COUNT codeCount, CODE_INPUT codeSnippets, ARG_COUNT argCount, FUNCTION_ARGS functionArgs) {
@@ -54,9 +54,8 @@ LANGUAGE_DESCRIPTOR_OBJECT ControlModule::ReadLanguageFile(SOURCE_LANGUAGE sourc
     try {
         // read and parse file;
         languageDescriptor = new LanguageDescriptorObject(sourceLanguage);
-        languageDescriptor->Parse_Special(sourceLanguage);
     } catch (...) {
-        
+
         throw "Language 'sourceLanguage' could not be read"; // TODO change this
     }
 
@@ -65,8 +64,8 @@ LANGUAGE_DESCRIPTOR_OBJECT ControlModule::ReadLanguageFile(SOURCE_LANGUAGE sourc
 
 CODE_OUTPUT ControlModule::CoalesceCode(CODE_INPUT codeSnippets) {
     CODE_OUTPUT code = NULL;
-    
-    // do some iterations over codeSnippets to unify it 
+
+    // do some iterations over codeSnippets to unify it
 
     return code;
 }
@@ -74,16 +73,52 @@ CODE_OUTPUT ControlModule::CoalesceCode(CODE_INPUT codeSnippets) {
 MARKUP_OBJECT ControlModule::Parse(CODE_OUTPUT code, LANGUAGE_DESCRIPTOR_OBJECT languageDescriptor) {
     MARKUP_OBJECT markup = NULL;
 
-    languageDescriptor->Tokenize(code[0]);
+    vector<Token> tokens = languageDescriptor->Tokenize(code[0]);
+
+    for (int i = 0; i < tokens.size(); i++) {
+        cout << "State machine accepted token '" << tokens[i].id << "' with data '" << tokens[i].value << "'\n";
+    }
 
     vector<Production*> prods = languageDescriptor->GetProductions();
-    markup = new Markup(prods, code[0]); // code[0] is temp
-    
-    markup->Output(0);
+    vector<vector<Token>> tokenSets;
+    tokenSets.push_back(tokens);
+
+    for (int i = 0; i < prods.size(); i++) {
+        for (int j = 0; j < tokenSets.size(); j++) {
+            TokenMatch* match = prods[i]->Match(tokenSets[j]);
+            if (match != NULL) {
+                vector<Token> s = vector<Token>(tokenSets[j].begin(), tokenSets[j].begin() + match->begin);
+                vector<Token> e = vector<Token>(tokenSets[j].begin() + match->end, tokenSets[j].begin() + tokenSets[j].size());
+
+                tokenSets.erase(tokenSets.begin() + j);
+
+                bool dec = false;
+                if (e.size() > 0) {
+                    tokenSets.insert(tokenSets.begin() + j, e);
+                    dec = true;
+                }
+                if (s.size() > 0) {
+                    tokenSets.insert(tokenSets.begin() + j, s);
+                    dec = true;
+                }
+                if (dec)
+                    j--;
+                cout << "MATCHED: " << prods[i]->GetId() << ", start = " << match->begin << ", end = " << match->end << ", length = " << match->length << endl;
+                match->Print(0);
+            }
+        }
+    }
+
+    return NULL;
+
+    // vector<Production*> prods = languageDescriptor->GetProductions();
+    // markup = new Markup(prods, code[0]); // code[0] is temp
+
+    // markup->Output(0);
 
     // do some gross manipulations to change the input into a markup object
 
-    return markup;
+    // return markup;
 }
 
 FORMATTED_RESULTS ControlModule::Execute(MARKUP_OBJECT markup, MODULE_ID moduleID, ARG_COUNT argCount, FUNCTION_ARGS functionArgs) {
