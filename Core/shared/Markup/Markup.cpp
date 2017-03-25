@@ -10,88 +10,76 @@
 
 Markup::Markup() {
     parent = NULL;
-    production = NULL;
 }
-Markup::Markup(vector<Production*> prods, string data) {
+Markup::Markup(string id, string data) {
     parent = NULL;
-    production = NULL;
     this->data = data;
-    Parse(prods, data);
+    this->id = id;
 }
-Markup::Markup(vector<Production*> prods, string data, Markup* parent, Production* prod) {
-    this->parent = parent;
-    production = prod;
-    this->data = data;
-    Parse(prods, data);
+Markup::Markup(string id) {
+    parent = NULL;
+    this->id = id;
 }
 Markup::~Markup() {
     
 }
 
-void Markup::Parse(vector<Production*> prods, string data) {
-    int numProds = prods.size();
-    // cout << "Parse markup tree (" << numProds << "): " << data << endl;
-
-    regex r;
-    smatch matches;
-    string t = data;
-    // cout << endl << t << endl << endl;
-
-    for (int i = 0; i < numProds; i++) {
-        r = regex(prods[i]->GetRegex()); 
-        
-        while (regex_search (t, matches, r)) {
-            // cout << "From '" << data << "' -> Found " << prods[i]->GetId() << " '" << matches[0] << "'" << endl;
-            vector<Production*> subprods = prods[i]->GetContainedProductions();
-            children.push_back(new Markup(subprods, matches[0], this, prods[i]));
-            t = matches.prefix().str() + matches.suffix().str();
-        }
-    }
-
-    // cout << endl << t << endl << endl;
+void Markup::AddChild(Markup* c) {
+    c->parent = this;
+    children.push_back(c);
 }
 
-int Markup::NumChildren() const {
+void Markup::AddChildren(vector<Markup*> list) {
+    for (int i = 0; i < list.size(); i++) {
+        Markup* c = list[i];
+        c->parent = this;
+        children.push_back(c);
+    }
+}
+
+int Markup::NumChildren() {
     return children.size();
 }
-Markup* Markup::ChildAt(int i) const {
+Markup* Markup::ChildAt(int i) {
     return children[i];
 }
-Markup* Markup::Parent() const {
+Markup* Markup::Parent() {
     return parent;
 }
-Production* Markup::ThisProduction() const {
-    return production;
-}
-vector<Markup*> Markup::Children() const {
+vector<Markup*> Markup::Children() {
     return children;
 }
-
-string Markup::ThisData() const {
-    return data;
+string Markup::GetData() {
+    if (!IsLeaf()) {
+        string d = children[0]->GetData();
+        for (int i = 1; i < children.size(); i++) {
+            d += " " + children[i]->GetData();
+        }
+        return d;
+    } else {
+        return data;
+    }
 }
 
 
-bool Markup::IsRoot() const {
+bool Markup::IsRoot() {
     return parent == NULL;
 }
-
-bool Markup::IsTerminal() const {
+bool Markup::IsLeaf() {
     return children.size() == 0;
 }
 
-void Markup::Output(int tabIndex) {
+void Markup::Print() {
+    Print(0);
+}
+void Markup::Print(int tabIndex) {
     int i;
     for (i = 0; i < tabIndex; i++) 
         cout << "\t";
 
-    if (!IsRoot())
-        cout << production->GetId();
-    else
-        cout << "Root";
-    cout << ": \"" << data << "\"\n";
+    cout << id << ": \"" << GetData() << "\"\n";
 
     for (int i = 0; i < NumChildren(); i++) {
-        children[i]->Output(tabIndex + 1);
+        children[i]->Print(tabIndex + 1);
     }
 }

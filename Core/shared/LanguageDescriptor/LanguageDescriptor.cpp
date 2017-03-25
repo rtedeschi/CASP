@@ -681,6 +681,43 @@ TokenMatch* ProductionSet::MatchProduction(vector<Token> tokens, int startIndex)
     return match;
 }
 
+Markup* TokenMatch::GenerateMarkup() {
+    Markup* r = new Markup(prod);
+    string currentData;
+
+    for (int i = 0; i < length; i++) {
+        Markup* c;
+        TokenMatch* sub = NULL;
+
+        for (int j = 0; j < submatches.size(); j++) {
+            if (submatches[j]->begin == i + begin) {
+                sub = submatches[j];
+                break;
+            }
+        }
+
+        if (sub != NULL) {
+            c = sub->GenerateMarkup();
+            if (sub->prod == "") {
+                r->AddChildren(c->Children());
+            } else {
+                r->AddChild(c);
+            }
+            i += sub->length - 1;
+        } else {
+            c = new Markup(match[i].id, match[i].value);
+            r->AddChild(c);
+        }
+
+        if (currentData != "")
+            currentData += " ";
+        currentData += c->GetData();
+    }
+    // r->SetData(currentData);
+
+    return r;
+}
+
 void TokenMatch::Print(int tab) {
     if (prod != "") {
         for (int p = 0; p < tab; p++) 

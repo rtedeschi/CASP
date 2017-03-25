@@ -13,6 +13,7 @@
 #include <string>
 #include <regex>
 #include <iostream>
+#include "../Markup/Markup.h"
 #include "../Helpers/Helpers.h"
 
 #define CFG_EXT ".cfg"
@@ -69,7 +70,8 @@ class TokenMatch {
         int length;
         vector<Token> match;
         vector<TokenMatch*> submatches;
-
+    
+        Markup* GenerateMarkup();
         void Print(int);
 
     private:

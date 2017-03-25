@@ -71,13 +71,13 @@ CODE_OUTPUT ControlModule::CoalesceCode(CODE_INPUT codeSnippets) {
 }
 
 MARKUP_OBJECT ControlModule::Parse(CODE_OUTPUT code, LANGUAGE_DESCRIPTOR_OBJECT languageDescriptor) {
-    MARKUP_OBJECT markup = NULL;
+    MARKUP_OBJECT markup = new Markup("ROOT");
 
     vector<Token> tokens = languageDescriptor->Tokenize(code[0]);
 
-    for (int i = 0; i < tokens.size(); i++) {
-        cout << "State machine accepted token '" << tokens[i].id << "' with data '" << tokens[i].value << "'\n";
-    }
+    // for (int i = 0; i < tokens.size(); i++) {
+    //     cout << "State machine accepted token '" << tokens[i].id << "' with data '" << tokens[i].value << "'\n";
+    // }
 
     vector<Production*> prods = languageDescriptor->GetProductions();
     vector<vector<Token>> tokenSets;
@@ -103,22 +103,18 @@ MARKUP_OBJECT ControlModule::Parse(CODE_OUTPUT code, LANGUAGE_DESCRIPTOR_OBJECT 
                 }
                 if (dec)
                     j--;
-                cout << "MATCHED: " << prods[i]->GetId() << ", start = " << match->begin << ", end = " << match->end << ", length = " << match->length << endl;
-                match->Print(0);
+                // cout << "MATCHED: " << prods[i]->GetId() << ", start = " << match->begin << ", end = " << match->end << ", length = " << match->length << endl;
+                // match->Print(0);
+                Markup* m = match->GenerateMarkup();
+                markup->AddChild(m);
+                // markupList.push_back(m);
             }
         }
     }
 
-    return NULL;
+    markup->Print();
 
-    // vector<Production*> prods = languageDescriptor->GetProductions();
-    // markup = new Markup(prods, code[0]); // code[0] is temp
-
-    // markup->Output(0);
-
-    // do some gross manipulations to change the input into a markup object
-
-    // return markup;
+    return markup;
 }
 
 FORMATTED_RESULTS ControlModule::Execute(MARKUP_OBJECT markup, MODULE_ID moduleID, ARG_COUNT argCount, FUNCTION_ARGS functionArgs) {

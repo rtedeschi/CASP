@@ -13,33 +13,35 @@
 #include <string>
 #include <regex>
 #include <iostream>
-#include "../LanguageDescriptor/LanguageDescriptor.h"
 #include "../Helpers/Helpers.h"
 
 class Markup 
 {
     public:
         Markup();
-        Markup(vector<Production*>, string);
-        Markup(vector<Production*>, string, Markup*, Production*);
+        Markup(string);
+        Markup(string, string);
         ~Markup();
 
-        void Parse(vector<Production*>, string);
-        int NumChildren() const;
-        Markup* ChildAt(int i) const;
-        vector<Markup*> Children() const;
-        Markup* Parent() const;
-        Production* ThisProduction() const;
-        string ThisData() const;
-        bool IsRoot() const;
-        bool IsTerminal() const;
+        void AddChild(Markup*);
+        void AddChildren(vector<Markup*>);
+        Markup* ChildAt(int i);
 
-        void Output(int);
+        Markup* Parent();
+        int NumChildren();
+        string GetData();
+        vector<Markup*> Children();
+        bool IsRoot();
+        bool IsLeaf();
+
+        void Print();
+        void Print(int);
+
     private:
         Markup* parent;
         vector<Markup*> children;
-        Production* production;
         string data;
+        string id;
 };
 
 #endif
