@@ -24,5 +24,32 @@ namespace Helpers {
 
         return filetext;
     }
+
+    list<string> ParseArrayArgument(string tag, string* args, int argCt) {
+        list<string> ls;
+
+        for (int i = 0; i < argCt; i++) {
+            if (args[i].find("/" + tag + "=") == 0) {
+                int size = tag.size() + 2;
+                string out = args[i].substr(size, args[i].size() - size);
+                ls.push_back(out);
+            }
+        }
+
+        return ls;
+    }
+
+    string ParseArgument(string tag, string* args, int argCt) {
+        string str;
+
+        for (int i = 0; i < argCt; i++) {
+            if (args[i].find("/" + tag + "=") == 0) {
+                int size = tag.size() + 2;
+                str = args[i].substr(size, args[i].size() - size);
+            }
+        }
+
+        return str;
+    }
 }
 

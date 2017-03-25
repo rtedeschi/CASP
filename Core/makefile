@@ -1,4 +1,4 @@
-link: Timestamp.h Helpers.o LanguageDescriptor.o ControlModule.o Markup.o Main.o
+link: Timestamp.h Plugins.o CASP_Plugin.o Helpers.o LanguageDescriptor.o ControlModule.o Markup.o Main.o 
 	@cl /Fe"CASP.exe" obj/*.o
 
 Main.o:
@@ -15,6 +15,12 @@ Markup.o:
 
 Helpers.o:
 	@cl /c shared/Helpers/Helpers.cpp /Fo"obj/Helpers.o"
+
+CASP_Plugin.o:
+	@cl /c shared/CASP_Plugin/CASP_Plugin.cpp /Fo"obj/CASP_Plugin.o"
+
+Plugins.o:
+	@call "tools/build_plugins.bat"
 
 Timestamp.h:
 	@echo /*>src/Timestamp.h

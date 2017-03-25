@@ -29,8 +29,10 @@
 #define LANGUAGE_DESCRIPTOR_OBJECT LanguageDescriptorObject*
 #define MARKUP_OBJECT Markup*
 #define CODE_OUTPUT string*
-#define MODULE_REF void*
+#define MODULE_REF CASP_Plugin*
 
+#include "../shared/CASP_Plugin/CASP_Plugin.h"
+#include "../plugins/plugins.h"
 #include <string>
 #include "../shared/LanguageDescriptor/LanguageDescriptor.h"
 #include "../shared/Markup/Markup.h"

@@ -11,11 +11,21 @@
 
 #include <string>
 #include <vector>
+#include <list>
 
 using namespace std;
 
 namespace Helpers {
     string ReadFile(string);
+
+    list<string> ParseArrayArgument(string, string*, int);
+    string ParseArgument(string, string*, int);
+
+    template<typename T> 
+    void listToArray(list<T> list, T** out) {
+        (*out) = (T*)calloc(list.size(), sizeof(T));
+        copy(list.begin(), list.end(), *out);
+    }
 };
 
 template<class T>

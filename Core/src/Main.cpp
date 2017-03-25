@@ -23,8 +23,6 @@ int SIZES[] { 0, 6, 10, 12, 6, 7 };
 int paramType(string);
 string parseParam(string, int);
 string unescapeCharacters(string);
-template<typename T> 
-void listToArray(list<T>, T**);
 
 int main(int argCount, char** argArray)
 {
@@ -63,8 +61,8 @@ int main(int argCount, char** argArray)
         }
     }
 
-    listToArray(codeSource, &codeArray);
-    listToArray(fnArgs, &fnArgsArray);
+    Helpers::listToArray(codeSource, &codeArray);
+    Helpers::listToArray(fnArgs, &fnArgsArray);
 
     ControlModule control = ControlModule();
     control.Run(sourceLanguage, moduleID, codeSource.size(), codeArray, fnArgs.size(), fnArgsArray);
@@ -73,12 +71,6 @@ int main(int argCount, char** argArray)
 
     return 0;
 }
-
-template<typename T> 
-void listToArray(list<T> list, T** out) {
-    (*out) = (T*)calloc(list.size(), sizeof(T));
-    copy(list.begin(), list.end(), *out);
-};
 
 int paramType(string input) {
     int type = OTHER;

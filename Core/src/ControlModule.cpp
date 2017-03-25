@@ -56,7 +56,7 @@ LANGUAGE_DESCRIPTOR_OBJECT ControlModule::ReadLanguageFile(SOURCE_LANGUAGE sourc
         languageDescriptor = new LanguageDescriptorObject(sourceLanguage);
     } catch (...) {
 
-        throw "Language 'sourceLanguage' could not be read"; // TODO change this
+        throw "Language '" + sourceLanguage + "' could not be read";
     }
 
     return languageDescriptor;
@@ -112,7 +112,7 @@ MARKUP_OBJECT ControlModule::Parse(CODE_OUTPUT code, LANGUAGE_DESCRIPTOR_OBJECT 
         }
     }
 
-    markup->Print();
+    // markup->Print();
 
     return markup;
 }
@@ -125,19 +125,18 @@ FORMATTED_RESULTS ControlModule::Execute(MARKUP_OBJECT markup, MODULE_ID moduleI
 }
 
 MODULE_REF ControlModule::ModuleRetrieval(MODULE_ID moduleID) {
-    MODULE_REF ref = NULL;
 
-    // get module ref here;
-
-    return ref;
+    return GetModule(moduleID);
 }
 
 MODULE_RESPONSE ControlModule::ModuleExecution(MODULE_REF moduleRef, MARKUP_OBJECT markup, ARG_COUNT argCount, FUNCTION_ARGS functionArgs) {
     MODULE_RESPONSE response = NULL;
 
     try {
+        /*response = */moduleRef->Execute(markup, functionArgs, argCount);
         // attempt to execute the module
     } catch (...) {
+        cout << "An error occurred when executing module!\n";
         // an error occurred, put it in the response object
     }
 
