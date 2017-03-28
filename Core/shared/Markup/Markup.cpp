@@ -61,6 +61,9 @@ string Markup::GetData() {
     }
 }
 
+string Markup::GetID() {
+    return id;
+}
 
 bool Markup::IsRoot() {
     return parent == NULL;

@@ -1,1 +1,11 @@
-casp /sourcelang="c++" /moduleid="some module" /args="/targetlang=\"java\"" /args="/anotherarg=\"14\"" /code="int i = 0;"
+Outline:
+casp /sourcelang="c++" /moduleid="outline" /codef="sample/source.outline.cpp"
+
+Translate:
+casp /sourcelang="c++" /moduleid="translate" /args="/targetlang=\"java\"" /codef="sample/source.translate.cpp"
+
+Analyze:
+casp /sourcelang="c++" /moduleid="analyze" /codef="sample/source.analyze.cpp"
+
+Lint
+casp /sourcelang="c++" /moduleid="lint" /args="/linter=\"java\"" /codef="sample/source.lint.cpp"

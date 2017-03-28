@@ -5,6 +5,7 @@ unordered_map<string, CASP_Plugin*> plugins;
 string RegisterPlugin(string id, CASP_Plugin* plugin) {
     std::transform(id.begin(), id.end(), id.begin(), ::tolower);
     plugins[id] = plugin;
+
     return id;
 }
 

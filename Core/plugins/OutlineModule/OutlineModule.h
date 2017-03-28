@@ -17,9 +17,7 @@ using namespace std;
 class OutlineModule : public CASP_Plugin {
     public:
         OutlineModule();
-
         virtual void Execute(Markup*, string*, int);
-
 };
 
 #endif

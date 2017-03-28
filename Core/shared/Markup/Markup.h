@@ -30,6 +30,7 @@ class Markup
         Markup* Parent();
         int NumChildren();
         string GetData();
+        string GetID();
         vector<Markup*> Children();
         bool IsRoot();
         bool IsLeaf();

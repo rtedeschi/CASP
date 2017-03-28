@@ -13,4 +13,6 @@ void OutlineModule::Execute(Markup* markup, string* fnArgs, int fnArgCount) {
 
     cout << "This is the entry point for the " << _OutlineModule << " Module!\n";
 
+    markup->Print();
+
 }
