@@ -118,6 +118,8 @@ class Production {
         ProductionSet* GetRootProductionSet();
         TokenMatch* Match(vector<Token>);
         TokenMatch* Match(vector<Token>, int);
+        TokenMatch* MatchStrict(vector<Token>);
+        TokenMatch* MatchStrict(vector<Token>, int);
 
         string GetRegex();
         string GetId();

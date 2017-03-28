@@ -257,6 +257,15 @@ TokenMatch* Production::Match(vector<Token> tokens, int start) {
     return t;
 }
 
+TokenMatch* Production::MatchStrict(vector<Token> tokens) {
+    return MatchStrict(tokens, 0);
+}
+
+TokenMatch* Production::MatchStrict(vector<Token> tokens, int start) {
+    TokenMatch* t = rootSet->MatchStrict(tokens, start);
+    return t;
+}
+
 void Production::Parse(string id, string data) {
     this->id = id;
     this->data = data;

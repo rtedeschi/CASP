@@ -83,31 +83,39 @@ MARKUP_OBJECT ControlModule::Parse(CODE_OUTPUT code, LANGUAGE_DESCRIPTOR_OBJECT 
     vector<vector<Token>> tokenSets;
     tokenSets.push_back(tokens);
 
-    for (int i = 0; i < prods.size(); i++) {
-        for (int j = 0; j < tokenSets.size(); j++) {
-            TokenMatch* match = prods[i]->Match(tokenSets[j]);
-            if (match != NULL) {
-                vector<Token> s = vector<Token>(tokenSets[j].begin(), tokenSets[j].begin() + match->begin);
-                vector<Token> e = vector<Token>(tokenSets[j].begin() + match->end, tokenSets[j].begin() + tokenSets[j].size());
+    bool matched = false;
 
-                tokenSets.erase(tokenSets.begin() + j);
+    for (int j = 0; j < tokenSets.size(); j++) {
+        matched = false;
 
-                bool dec = false;
-                if (e.size() > 0) {
-                    tokenSets.insert(tokenSets.begin() + j, e);
-                    dec = true;
+        for (int p = 0; p < tokenSets[j].size() && !matched; p++) {
+
+            for (int i = 0; i < prods.size() && !matched; i++) {
+                TokenMatch* match = prods[i]->MatchStrict(tokenSets[j]);
+                if (match != NULL) {
+                    vector<Token> s = vector<Token>(tokenSets[j].begin(), tokenSets[j].begin() + match->begin);
+                    vector<Token> e = vector<Token>(tokenSets[j].begin() + match->end, tokenSets[j].begin() + tokenSets[j].size());
+
+                    tokenSets.erase(tokenSets.begin() + j);
+
+                    bool dec = false;
+                    if (e.size() > 0) {
+                        tokenSets.insert(tokenSets.begin() + j, e);
+                        dec = true;
+                    }
+                    if (s.size() > 0) {
+                        tokenSets.insert(tokenSets.begin() + j, s);
+                        dec = true;
+                    }
+                    if (dec)
+                        j--;
+                    // cout << "MATCHED: " << prods[i]->GetId() << ", start = " << match->begin << ", end = " << match->end << ", length = " << match->length << endl;
+                    // match->Print(0);
+                    Markup* m = match->GenerateMarkup();
+                    markup->AddChild(m);
+                    // markupList.push_back(m);
+                    matched = true;
                 }
-                if (s.size() > 0) {
-                    tokenSets.insert(tokenSets.begin() + j, s);
-                    dec = true;
-                }
-                if (dec)
-                    j--;
-                // cout << "MATCHED: " << prods[i]->GetId() << ", start = " << match->begin << ", end = " << match->end << ", length = " << match->length << endl;
-                // match->Print(0);
-                Markup* m = match->GenerateMarkup();
-                markup->AddChild(m);
-                // markupList.push_back(m);
             }
         }
     }
