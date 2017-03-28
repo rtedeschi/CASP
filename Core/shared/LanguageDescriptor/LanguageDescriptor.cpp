@@ -537,8 +537,10 @@ TokenMatch* ProductionSet::MatchGroup(vector<Token> tokens, int startIndex) {
                 match->submatches.clear();
                 break;
             }
-            match->submatches.push_back(groupMatch);
-            i += groupMatch->length;
+            if (groupMatch->length > 0) {
+                match->submatches.push_back(groupMatch);
+                i += groupMatch->length;
+            }
         }
 
         if (roundMatch) {
@@ -590,8 +592,10 @@ TokenMatch* ProductionSet::MatchAlternation(vector<Token> tokens, int startIndex
             alternationMatch = children[j]->MatchStrict(tokens, i);
             if (alternationMatch != NULL) {
                 roundMatch = true;
-                i += alternationMatch->length;
-                match->submatches.push_back(alternationMatch);
+                if (alternationMatch->length > 0) {
+                    i += alternationMatch->length;
+                    match->submatches.push_back(alternationMatch);
+                }
                 break;
             }
         }
@@ -644,8 +648,10 @@ TokenMatch* ProductionSet::MatchProduction(vector<Token> tokens, int startIndex)
         if (prod != NULL) {
             TokenMatch* prodMatch = prod->GetRootProductionSet()->MatchStrict(tokens, i);
             if (prodMatch != NULL) {
-                i += prodMatch->length;
-                match->submatches.push_back(prodMatch);
+                if (prodMatch->length > 0) {
+                    i += prodMatch->length;
+                    match->submatches.push_back(prodMatch);
+                }
             } else {
                 roundMatch = false;
             }
