@@ -86,3 +86,55 @@ void Markup::Print(int tabIndex) {
         children[i]->Print(tabIndex + 1);
     }
 }
+
+Markup* Markup::FindFirstById(string id) {
+    Markup* result = NULL;
+    if (this->id == id) {
+        result = this;
+    } else {
+        for (int i = 0; i < children.size(); i++) {
+            if ((result = children[i]->FindFirstById(id)) != NULL)
+                break;
+        }
+    }
+    return result;
+}
+vector<Markup*> Markup::FindAllById(string id, bool findChildrenOfMatches) {
+    vector<Markup*> results;
+
+    if (this->id == id) {
+        results.push_back(this);
+    }
+
+    if (this->id != id || findChildrenOfMatches) {
+        for (int i = 0; i < children.size(); i++) {
+            vector<Markup*> v = children[i]->FindAllById(id, findChildrenOfMatches);
+            results.insert(results.end(), v.begin(), v.end());
+        }
+    }
+
+    return results;
+}
+
+Markup* Markup::FindFirstChildById(string id) {
+    Markup* result = NULL;
+
+    for (int i = 0; i < children.size(); i++) {
+        if (children[i]->id == id) {
+            result = children[i];
+            break;
+        }
+    }
+    
+    return result;
+}
+vector<Markup*> Markup::FindAllChildrenById(string id) {
+    vector<Markup*> results;
+
+    for (int i = 0; i < children.size(); i++) {
+        if (children[i]->id == id)
+            results.push_back(children[i]);
+    }
+
+    return results;
+}

@@ -27,6 +27,15 @@ class Markup
         void AddChildren(vector<Markup*>);
         Markup* ChildAt(int i);
 
+        // Finds the first matching child by identifier, null if no match
+        Markup* FindFirstChildById(string);
+        // Finds the first matching node in self or any descendants by identifier, null if no match
+        Markup* FindFirstById(string);
+        // Finds all matching children by identifier
+        vector<Markup*> FindAllChildrenById(string);
+        // Finds all matching self or descendants by identifier
+        vector<Markup*> FindAllById(string, bool);
+
         Markup* Parent();
         int NumChildren();
         string GetData();
