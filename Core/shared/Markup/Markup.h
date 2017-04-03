@@ -14,8 +14,9 @@
 #include <regex>
 #include <iostream>
 #include "../Helpers/Helpers.h"
+#include "../Printable/Printable.h"
 
-class Markup 
+class Markup : public Printable
 {
     public:
         Markup();

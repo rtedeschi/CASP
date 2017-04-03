@@ -12,6 +12,7 @@
 #include <iostream>
 #include <vector>
 #include "../../shared/CASP_Plugin/CASP_Plugin.h"
+#include "../../shared/Printable/Printable.h"
 
 using namespace std;
 
@@ -40,18 +41,19 @@ class OutlineModule : public CASP_Plugin {
         Node* processBlock(Markup*, Outline*, Node*);
 };
 
-class Outline {
+class Outline : public Printable {
     public:
         Outline();
 
         Node* AppendBlock(EntryType, string, Node*);
+        void Print();
 
     private:
         int maxId = 0;
         Node* head = NULL;
 };
 
-class Node {
+class Node : public Printable {
     public:
         Node(string, EntryType, int);
 
@@ -59,6 +61,7 @@ class Node {
         Edge* AddEdgeTo(Node*, string);
         Edge* AddEdgeFrom(Node*);
         Edge* AddEdgeFrom(Node*, string);
+        void Print();
 
         int id;
         string data;
@@ -69,15 +72,17 @@ class Node {
 
 };
 
-class Edge {
+class Edge : public Printable {
     public:
         Edge(Node*, Node*, string);
         Edge(Node*, Node*);
-        
-    private:
+        void Print();
+
         string data = "";
         Node* source = NULL;
         Node* target = NULL;
+        
+    private:
 };
 
 #endif

@@ -2,6 +2,8 @@
 
 static string _OutlineModule = RegisterPlugin("Outline", new OutlineModule());
 
+string EntryTypes[] = { "Start", "Method Call", "Process", "Loop", "Decision", "I/O", "End" };
+
 OutlineModule::OutlineModule() {}
 
 void OutlineModule::Execute(Markup* markup, string* fnArgs, int fnArgCount) {
@@ -19,8 +21,8 @@ void OutlineModule::Execute(Markup* markup, string* fnArgs, int fnArgCount) {
     //     m[i]->Print();
     // }
 
-    GetAllOutlines(markup);
-
+    vector<Outline*> outlines = GetAllOutlines(markup);
+    return FormatData(outlines);
 }
 
 vector<Outline*> OutlineModule::GetAllOutlines(Markup* masterTree) {
@@ -57,8 +59,6 @@ Outline* OutlineModule::GetRootOutline(vector<Markup*> parseTrees) {
 Outline* OutlineModule::GetFunctionOutline(Markup* functionTree) {
     string functionTitle = functionTree->FindFirstChildById("function-identifier")->GetData();
 
-    cout << "Outline Starting for " << functionTitle << endl;
-
     Outline* outline = new Outline();
     Node* currentNode = outline->AppendBlock(Start, functionTitle, NULL);
 
@@ -67,13 +67,16 @@ Outline* OutlineModule::GetFunctionOutline(Markup* functionTree) {
 
     outline->AppendBlock(End, "End " + functionTitle, currentNode);
 
-    cout << "Outline Complete for " << functionTitle << endl;
-
     return outline;
 }
 
 void OutlineModule::FormatData(vector<Outline*> outlines) {
+    for (int i = 0; i < outlines.size(); i++) {
+        outlines[i]->Print();
+        cout << endl;
+    }
 
+    // return void;
 }
 
 Node* OutlineModule::stripProcess(Markup* parseTree, Outline* outline, Node* startNode) {
@@ -155,23 +158,20 @@ Node* OutlineModule::stripLoop(Markup* parseTree, Outline* outline, Node* startN
 Node* OutlineModule::processBlock(Markup* parseTree, Outline* outline, Node* startNode) {
     Node* currentNode = startNode;
     Markup* sl = parseTree->FindFirstById("statement-list");
-    cout << "start" << endl;
 
     if (sl != NULL) {
         vector<Markup*> statements = sl->Children();
 
-        for (int i = 0; statements.size(); i++) {
+        for (int i = 0; i < statements.size(); i++) {
             currentNode = processStatement(statements[i], outline, currentNode);
         }
     }
-    cout << "end" << endl;
     return currentNode;
 }
 Node* OutlineModule::processStatement(Markup* statement, Outline* outline, Node* startNode) {
     Node* currentNode = NULL;
     Markup* s = statement->ChildAt(0);
     string id = s->GetID();
-    cout << "s" << endl;
 
     if (id == "for-loop") {
         currentNode = stripLoop(s, outline, startNode);
@@ -188,12 +188,19 @@ Node* OutlineModule::processStatement(Markup* statement, Outline* outline, Node*
             currentNode = stripProcess(s, outline, startNode);
         }
     }
-    cout << "e" << endl;
 
     return currentNode;
 }
 
 Outline::Outline() {}
+
+void Outline::Print() {
+    if (head != NULL) {
+        head->Print();
+    } else {
+        cout << "No data to print\n";
+    }
+}
 
 Node* Outline::AppendBlock(EntryType type, string nodeData, Node* sourceNode) {
 
@@ -214,6 +221,20 @@ Node::Node(string data, EntryType type, int id) {
     this->data = data;
     this->type = type;
 
+}
+
+void Node::Print() {
+    cout << id << "\t" << data << " (" << EntryTypes[type] << ")\n";
+    for (int i = 0; i < edges.size(); i++) {
+        cout << "\t" << (i + 1) << "\t";
+        edges[i]->Print();
+    }
+
+    for (int i = 0; i < edges.size(); i++) {
+        if (edges[i]->target->id > id)
+            edges[i]->target->Print();
+    }
+    
 }
 
 Edge* Node::AddEdgeTo(Node* toNode) {
@@ -261,4 +282,11 @@ Edge::Edge(Node* source, Node* target, string data) {
     this->source = source;
     this->target = target;
 
+}
+
+void Edge::Print() {
+    cout << "Edge from " << source->id << " to " << target->id;
+    if (data != "")
+        cout << " (" << data << ")";
+    cout << endl;
 }
