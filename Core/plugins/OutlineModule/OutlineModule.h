@@ -16,7 +16,7 @@
 
 using namespace std;
 
-enum EntryType { Start, MethodCall, Process, Loop, Decision, IO, End };
+enum EntryType { Start, MethodCall, Process, Loop, Decision, EndDecision, IO, End };
 class OutlineModule;
 class Outline;
 class Node;
@@ -33,12 +33,12 @@ class OutlineModule : public CASP_Plugin {
         Outline* GetFunctionOutline(Markup*);
         void FormatData(vector<Outline*>);
 
-        Node* stripProcess(Markup*, Outline*, Node*);
-        Node* stripMethodCall(Markup*, Outline*, Node*);
-        Node* stripDecision(Markup*, Outline*, Node*);
-        Node* stripLoop(Markup*, Outline*, Node*);
-        Node* processStatement(Markup*, Outline*, Node*);
-        Node* processBlock(Markup*, Outline*, Node*);
+        Node* stripProcess(Markup*, Outline*, Node*, string = "");
+        Node* stripMethodCall(Markup*, Outline*, Node*, string = "");
+        Node* stripDecision(Markup*, Outline*, Node*, string = "");
+        Node* stripLoop(Markup*, Outline*, Node*, string = "");
+        Node* processStatement(Markup*, Outline*, Node*, string = "");
+        Node* processBlock(Markup*, Outline*, Node*, string = "");
 };
 
 class Outline : public Printable {
@@ -46,9 +46,12 @@ class Outline : public Printable {
         Outline();
 
         Node* AppendBlock(EntryType, string, Node*);
+        Node* AppendBlock(EntryType, string, Node*, string);
+        Node* AppendBlock(Node*);
         void Print();
 
     private:
+        vector<Node*> nodes;
         int maxId = 0;
         Node* head = NULL;
 };
