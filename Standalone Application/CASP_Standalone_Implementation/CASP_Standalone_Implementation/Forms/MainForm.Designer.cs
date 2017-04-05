@@ -133,13 +133,11 @@ namespace CASP_Standalone_Implementation
             // 
             this.ShowOutputCheckbox.AutoSize = true;
             this.ShowOutputCheckbox.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.ShowOutputCheckbox.Checked = true;
-            this.ShowOutputCheckbox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.ShowOutputCheckbox.Location = new System.Drawing.Point(863, 460);
+            this.ShowOutputCheckbox.Location = new System.Drawing.Point(916, 460);
             this.ShowOutputCheckbox.Name = "ShowOutputCheckbox";
-            this.ShowOutputCheckbox.Size = new System.Drawing.Size(181, 21);
+            this.ShowOutputCheckbox.Size = new System.Drawing.Size(128, 21);
             this.ShowOutputCheckbox.TabIndex = 9;
-            this.ShowOutputCheckbox.Text = "Display Program Output";
+            this.ShowOutputCheckbox.Text = "Console Output";
             this.ShowOutputCheckbox.UseVisualStyleBackColor = true;
             // 
             // MainForm

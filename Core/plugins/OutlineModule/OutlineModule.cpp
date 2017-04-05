@@ -2,7 +2,7 @@
 
 static string _OutlineModule = RegisterPlugin("Outline", new OutlineModule());
 
-string EntryTypes[] = { "Start", "Method Call", "Process", "Loop", "Decision", "End Decision", "I/O", "End" };
+string EntryTypes[] = { "Start", "MethodCall", "Process", "Loop", "Decision", "EndDecision", "IO", "End" };
 
 OutlineModule::OutlineModule() {}
 
@@ -280,7 +280,7 @@ Node* Outline::AppendBlock(EntryType type, string nodeData, Node* sourceNode) {
 
 Node* Outline::AppendBlock(EntryType type, string nodeData, Node* sourceNode, string edgeData) {
 
-    Node* node = new Node(nodeData, type, ++maxId);
+    Node* node = new Node(nodeData, type, maxId++);
     if (sourceNode != NULL) {
         sourceNode->AddEdgeTo(node, edgeData);
     }
@@ -294,7 +294,7 @@ Node* Outline::AppendBlock(EntryType type, string nodeData, Node* sourceNode, st
 
 Node* Outline::AppendBlock(Node* node) {
 
-    node->id = ++maxId;
+    node->id = maxId++;
 
     if (head == NULL) {
         head = node;

@@ -6,6 +6,9 @@ using System.Windows.Forms;
 using CASP_Standalone_Implementation.Forms;
 using CASP_Standalone_Implementation.Src;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace CASP_Standalone_Implementation
 {
@@ -71,9 +74,13 @@ namespace CASP_Standalone_Implementation
             Type T = Modules[ModuleCombo.SelectedItem.ToString()];
             if (T != null && T.IsSubclassOf(typeof(CASP_OutputForm)))
             {
+                Regex reg = new Regex("CASP_RETURN_DATA_START(.*)CASP_RETURN_DATA_END", RegexOptions.Singleline);
+                string jsonString = reg.Match(output).Groups[1].Value.Trim();
+                JObject response = JsonConvert.DeserializeObject<JObject>(jsonString);
+
                 CASP_OutputForm form = (CASP_OutputForm)Activator.CreateInstance(T);
                 form.Show();
-                form.Set_CASP_Output(output);
+                form.Set_CASP_Output(response);
             }
 
             File.Delete(filename);
