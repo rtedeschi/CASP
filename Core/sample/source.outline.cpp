@@ -13,13 +13,7 @@ int outline_example(int a, bool b) {
     display(c);
     display(a);
     display(b);
-
-    for (int i = 0; i < 10; i++) {
-        
-        c = i;
-
-    }
-
+    
 }
 
 int display(void a) {

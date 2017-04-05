@@ -6,7 +6,7 @@ string EntryTypes[] = { "Start", "Method Call", "Process", "Loop", "Decision", "
 
 OutlineModule::OutlineModule() {}
 
-void OutlineModule::Execute(Markup* markup, string* fnArgs, int fnArgCount) {
+CASP_Return* OutlineModule::Execute(Markup* markup, string* fnArgs, int fnArgCount) {
 
     /*
         This module hasn't implemented any Function Args yet!
@@ -70,13 +70,23 @@ Outline* OutlineModule::GetFunctionOutline(Markup* functionTree) {
     return outline;
 }
 
-void OutlineModule::FormatData(vector<Outline*> outlines) {
+CASP_Return* OutlineModule::FormatData(vector<Outline*> outlines) {
+    CASP_Return* ret = new CASP_Return();
+    GenericObject* data = ret->Data();
+    GenericArray* o = new GenericArray();
+
     for (int i = 0; i < outlines.size(); i++) {
+        o->Add(outlines[i]->Output());
         outlines[i]->Print();
         cout << endl;
     }
 
-    // return void;
+    data->Add("Outlines", o);
+
+    // ret->Print();
+    // cout << endl;
+
+    return ret;
 }
 
 Node* OutlineModule::stripProcess(Markup* parseTree, Outline* outline, Node* startNode, string firstEdgeData) {
@@ -242,6 +252,16 @@ Node* OutlineModule::processStatement(Markup* statement, Outline* outline, Node*
 
 Outline::Outline() {}
 
+GenericArray* Outline::Output() {
+    GenericArray* arr = new GenericArray();
+
+    for (int i = 0; i < nodes.size(); i++) {
+        arr->Add(nodes[i]->Output());
+    }
+
+    return arr;
+}
+
 void Outline::Print() {
     // if (head != NULL) {
     //     head->Print();
@@ -290,6 +310,23 @@ Node::Node(string data, EntryType type, int id) {
     this->data = data;
     this->type = type;
 
+}
+
+GenericObject* Node::Output() {
+    GenericObject* ob = new GenericObject();
+    GenericArray* arr = new GenericArray();
+
+    ob->Add("id", new GenericLeaf<int>(id));
+    ob->Add("data", new GenericLeaf<string>("\"" + data + "\""));
+    ob->Add("type", new GenericLeaf<string>("\"" + EntryTypes[type] + "\""));
+
+    for (int i = 0; i < edges.size(); i++) {
+        arr->Add(edges[i]->Output());
+    }
+
+    ob->Add("edges", arr);
+
+    return ob;
 }
 
 void Node::Print() {
@@ -351,6 +388,16 @@ Edge::Edge(Node* source, Node* target, string data) {
     this->source = source;
     this->target = target;
 
+}
+
+GenericObject* Edge::Output() {
+    GenericObject* ob = new GenericObject();
+
+    ob->Add("data", new GenericLeaf<string>("\"" + data + "\""));
+    ob->Add("source", new GenericLeaf<int>(source->id));
+    ob->Add("target", new GenericLeaf<int>(target->id));
+
+    return ob;
 }
 
 void Edge::Print() {

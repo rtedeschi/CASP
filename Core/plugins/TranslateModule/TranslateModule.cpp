@@ -4,7 +4,7 @@ static string _TranslateModule = RegisterPlugin("Translate", new TranslateModule
 
 TranslateModule::TranslateModule() {}
 
-void TranslateModule::Execute(Markup* markup, string* fnArgs, int fnArgCount) {
+CASP_Return* TranslateModule::Execute(Markup* markup, string* fnArgs, int fnArgCount) {
 
     /*
         This module hasn't implemented any Function Args yet!
@@ -12,5 +12,7 @@ void TranslateModule::Execute(Markup* markup, string* fnArgs, int fnArgCount) {
     */
 
     cout << "This is the entry point for the " << _TranslateModule << " Module!\n";
+
+    return NULL;
 
 }

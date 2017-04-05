@@ -25,13 +25,13 @@ class Edge;
 class OutlineModule : public CASP_Plugin {
     public:
         OutlineModule();
-        virtual void Execute(Markup*, string*, int);
+        virtual CASP_Return* Execute(Markup*, string*, int);
 
     private:
         vector<Outline*> GetAllOutlines(Markup*);
         Outline* GetRootOutline(vector<Markup*>);
         Outline* GetFunctionOutline(Markup*);
-        void FormatData(vector<Outline*>);
+        CASP_Return* FormatData(vector<Outline*>);
 
         Node* stripProcess(Markup*, Outline*, Node*, string = "");
         Node* stripMethodCall(Markup*, Outline*, Node*, string = "");
@@ -50,6 +50,8 @@ class Outline : public Printable {
         Node* AppendBlock(Node*);
         void Print();
 
+        GenericArray* Output();
+
     private:
         vector<Node*> nodes;
         int maxId = 0;
@@ -66,6 +68,8 @@ class Node : public Printable {
         Edge* AddEdgeFrom(Node*, string);
         void Print();
 
+        GenericObject* Output();        
+
         int id;
         string data;
         EntryType type;
@@ -80,6 +84,8 @@ class Edge : public Printable {
         Edge(Node*, Node*, string);
         Edge(Node*, Node*);
         void Print();
+
+        GenericObject* Output();        
 
         string data = "";
         Node* source = NULL;

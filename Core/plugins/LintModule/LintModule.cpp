@@ -4,7 +4,7 @@ static string _LintModule = RegisterPlugin("Lint", new LintModule());
 
 LintModule::LintModule() {}
 
-void LintModule::Execute(Markup* markup, string* fnArgs, int fnArgCount) {
+CASP_Return* LintModule::Execute(Markup* markup, string* fnArgs, int fnArgCount) {
 
     /*
         This module hasn't implemented any Function Args yet!
@@ -12,5 +12,7 @@ void LintModule::Execute(Markup* markup, string* fnArgs, int fnArgCount) {
     */
 
     cout << "This is the entry point for the " << _LintModule << " Module!\n";
+
+    return NULL;
 
 }

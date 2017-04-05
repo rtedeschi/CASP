@@ -18,7 +18,7 @@ class TranslateModule : public CASP_Plugin {
     public:
         TranslateModule();
 
-        virtual void Execute(Markup*, string*, int);
+        virtual CASP_Return* Execute(Markup*, string*, int);
 
 };
 

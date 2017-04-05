@@ -4,7 +4,7 @@ static string _AnalyzeModule = RegisterPlugin("Analyze", new AnalyzeModule());
 
 AnalyzeModule::AnalyzeModule() {}
 
-void AnalyzeModule::Execute(Markup* markup, string* fnArgs, int fnArgCount) {
+CASP_Return* AnalyzeModule::Execute(Markup* markup, string* fnArgs, int fnArgCount) {
 
     /*
         This module hasn't implemented any Function Args yet!
@@ -12,5 +12,7 @@ void AnalyzeModule::Execute(Markup* markup, string* fnArgs, int fnArgCount) {
     */
 
     cout << "This is the entry point for the " << _AnalyzeModule << " Module!\n";
+
+    return NULL;
 
 }
