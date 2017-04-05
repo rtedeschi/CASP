@@ -133,6 +133,10 @@
     display(c);
     display(a);
     display(b);
+
+    if (d) {
+        do_this();
+    }
     
 }
 

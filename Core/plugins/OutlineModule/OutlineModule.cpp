@@ -121,7 +121,7 @@ Node* OutlineModule::stripDecision(Markup* parseTree, Outline* outline, Node* st
 
     Node* currentDecisionHead;
     Node* currentNode = startNode;
-    Node* endDecision = new Node("End Decision", Process, 0);
+    Node* endDecision = new Node("End Decision", EndDecision, 0);
 
     Markup* condition = parseTree->FindFirstChildById("expression");
     Markup* proc;

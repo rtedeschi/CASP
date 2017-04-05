@@ -69,6 +69,26 @@ namespace CASP_Standalone_Implementation.Src
         Socket LeftSocket;
         Socket RightSocket;
         bool renderingSockets = false;
+        public BlockType type;
+        public FlowBlock parent = null;
+        public List<FlowBlock> children = new List<FlowBlock>();
+
+        public List<FlowBlock> siblings
+        {
+            get
+            {
+                List<FlowBlock> sibs = new List<FlowBlock>();
+                if (parent != null)
+                {
+                    for (int i = 0; i < parent.children.Count; i++)
+                    {
+                        if (parent.children[i] != this)
+                            sibs.Add(parent.children[i]);
+                    }
+                }
+                return sibs;
+            }
+        }
 
         public int id;
 
@@ -101,10 +121,10 @@ namespace CASP_Standalone_Implementation.Src
         }
 
         public FlowBlock() : base() {
-            TopSocket = new Socket(this);
-            BottomSocket = new Socket(this);
-            LeftSocket = new Socket(this);
-            RightSocket = new Socket(this);
+            TopSocket = new Socket(this, 90);
+            BottomSocket = new Socket(this, 270);
+            LeftSocket = new Socket(this, 180);
+            RightSocket = new Socket(this, 0);
             UpdateSockets();
             //RenderSockets = true;
         }
@@ -202,7 +222,9 @@ namespace CASP_Standalone_Implementation.Src
 
             if (TopSocket.Unused)
             {
-                Socket temp = block.ClosestUnusedSocketToPoint(TopSocket.Location);
+                Socket temp = block.type != BlockType.EndDecision ?
+                    block.ClosestUnusedSocketToPoint(TopSocket.Location) :
+                    block.ClosestSocketToPoint(TopSocket.Location);
                 if (temp != null)
                 {
                     next = TopSocket.DistanceToPoint(temp.Location);
@@ -217,7 +239,9 @@ namespace CASP_Standalone_Implementation.Src
 
             if (BottomSocket.Unused)
             {
-                Socket temp = block.ClosestUnusedSocketToPoint(BottomSocket.Location);
+                Socket temp = block.type != BlockType.EndDecision ?
+                    block.ClosestUnusedSocketToPoint(BottomSocket.Location) :
+                    block.ClosestSocketToPoint(BottomSocket.Location);
                 if (temp != null)
                 {
                     next = BottomSocket.DistanceToPoint(temp.Location);
@@ -232,7 +256,9 @@ namespace CASP_Standalone_Implementation.Src
 
             if (LeftSocket.Unused)
             {
-                Socket temp = block.ClosestUnusedSocketToPoint(LeftSocket.Location);
+                Socket temp = block.type != BlockType.EndDecision ?
+                    block.ClosestUnusedSocketToPoint(LeftSocket.Location) :
+                    block.ClosestSocketToPoint(LeftSocket.Location);
                 if (temp != null)
                 {
                     next = LeftSocket.DistanceToPoint(temp.Location);
@@ -247,7 +273,9 @@ namespace CASP_Standalone_Implementation.Src
 
             if (RightSocket.Unused)
             {
-                Socket temp = block.ClosestUnusedSocketToPoint(RightSocket.Location);
+                Socket temp = block.type != BlockType.EndDecision ? 
+                    block.ClosestUnusedSocketToPoint(RightSocket.Location) :
+                    block.ClosestSocketToPoint(RightSocket.Location);
                 if (temp != null)
                 {
                     next = RightSocket.DistanceToPoint(temp.Location);
@@ -335,6 +363,21 @@ namespace CASP_Standalone_Implementation.Src
         public FlowBlock FlowBlock;
         public Point LocalLocation;
         public Connector Connector = null;
+        public double angle = 0;
+        public double outAngle
+        {
+            get
+            {
+                return angle % 360;
+            }
+        }
+        public double inAngle
+        {
+            get
+            {
+                return (outAngle + 180) % 360;
+            }
+        }
 
         public bool isSource
         {
@@ -375,10 +418,11 @@ namespace CASP_Standalone_Implementation.Src
             }
         }
 
-        public Socket(FlowBlock parent, int localX = 0, int localY = 0)
+        public Socket(FlowBlock parent, double angle, int localX = 0, int localY = 0)
         {
             FlowBlock = parent;
             LocalLocation = new Point(localX, localY);
+            this.angle = angle;
         }
 
         public void SetLocation(int localX, int localY)
@@ -393,28 +437,28 @@ namespace CASP_Standalone_Implementation.Src
 
         public bool ConnectAsSource(Connector connector)
         {
-            if (Connector == null)
-            {
-                if (connector.Source != null)
-                    connector.Source.Connector = null;
+            //if (Connector == null)
+            //{
+            //    if (connector.Source != null)
+            //        connector.Source.Connector = null;
                 connector.Source = this;
                 Connector = connector;
                 return true;
-            }
-            return false;
+            //}
+            //return false;
         }
 
         public bool ConnectAsTarget(Connector connector)
         {
-            if (Connector == null)
-            {
-                if (connector.Target != null)
-                    connector.Target.Connector = null;
+            //if (Connector == null)
+            //{
+            //    if (connector.Target != null)
+            //        connector.Target.Connector = null;
                 connector.Target = this;
                 Connector = connector;
                 return true;
-            }
-            return false;
+            //}
+            //return false;
         }
 
     }
@@ -432,24 +476,197 @@ namespace CASP_Standalone_Implementation.Src
 
             if (Source != null && Target != null)
             {
-                int arrowLen = 10;
-                Point source = Source.Location;
+                int arrowLen = 6;
+
+                Point source = intermediateArrowPath(path);
                 Point target = Target.Location;
 
-                double initialAngleDeg = 360 - Math.Atan2(target.Y - source.Y, target.X - source.X) * 180 / Math.PI;
+                double initialAngleDeg = Math.Atan2(target.Y - source.Y, target.X - source.X) * 180 / Math.PI;
                 double angleLRad = (initialAngleDeg - 180 + 45 / 2) * Math.PI / 180;
                 double angleRRad = (initialAngleDeg - 180 - 45 / 2) * Math.PI / 180;
 
-                Point arrowL = new Point(target.X + (int)(arrowLen * Math.Cos(angleLRad)), target.Y - (int)(arrowLen * Math.Sin(angleLRad)));
-                Point arrowR = new Point(target.X + (int)(arrowLen * Math.Cos(angleRRad)), target.Y - (int)(arrowLen * Math.Sin(angleRRad)));
+                Point arrowL = new Point(target.X + (int)(arrowLen * Math.Cos(angleLRad)), target.Y + (int)(arrowLen * Math.Sin(angleLRad)));
+                Point arrowR = new Point(target.X + (int)(arrowLen * Math.Cos(angleRRad)), target.Y + (int)(arrowLen * Math.Sin(angleRRad)));
 
                 path.AddLine(source, target);
                 path.AddLine(target, arrowL);
                 path.AddLine(target, arrowR);
-                //path.AddPolygon(new Point[] { target, arrowL, arrowR });
             }
 
             return path;
+        }
+
+        private Point intermediateArrowPath(GraphicsPath path)
+        {
+            Point end = Source.Location;
+
+            double outAngle = Source.outAngle;
+            double inAngle = Target.inAngle;
+
+            // complimentary sides (t & b, l & r)
+            if (outAngle == inAngle)
+            {
+                // vertical
+                if (Math.Abs(outAngle % 180) == 90)
+                {
+                    if (Source.Location.X != Target.Location.X)
+                    {
+                        int hy = Source.Location.Y + (Target.Location.Y - Source.Location.Y) / 2;
+                        Point p1 = Source.Location;
+                        Point p2 = new Point(Source.Location.X, hy);
+                        Point p3 = new Point(Target.Location.X, hy);
+                        path.AddLine(p1, p2);
+                        path.AddLine(p2, p3);
+                        end = p3;
+                    }
+                }
+                // horizontal
+                else if (Math.Abs(outAngle % 180) == 0)
+                {
+                    if (Source.Location.Y != Target.Location.Y)
+                    {
+                        int hx = Source.Location.X + (Target.Location.X - Source.Location.X) / 2;
+                        Point p1 = Source.Location;
+                        Point p2 = new Point(hx, Source.Location.Y);
+                        Point p3 = new Point(hx, Target.Location.Y);
+                        path.AddLine(p1, p2);
+                        path.AddLine(p2, p3);
+                        end = p3;
+                    }
+                }
+            }
+            // opposite sides (l & l, t & t, etc.)
+            else if ((inAngle + 180) % 360 == outAngle)
+            {
+                bool set = false;
+                Point p1 = Source.Location, p2 = new Point(), p3 = new Point();
+                // right
+                if (outAngle == 0)
+                {
+                    set = true;
+                    int maxX = Math.Max(Source.Location.X, Target.Location.X) + 10;
+                    p2 = new Point(maxX, Source.Location.Y);
+                    p3 = new Point(maxX, Target.Location.Y);
+                }
+                // left
+                else if (outAngle == 180)
+                {
+                    set = true;
+                    int minX = Math.Min(Source.Location.X, Target.Location.X) - 10;
+                    p2 = new Point(minX, Source.Location.Y);
+                    p3 = new Point(minX, Target.Location.Y);
+                }
+                // top
+                if (outAngle == 90)
+                {
+                    set = true;
+                    int minY = Math.Max(Source.Location.Y, Target.Location.Y) - 10;
+                    p2 = new Point(Source.Location.X, minY);
+                    p3 = new Point(Target.Location.X, minY);
+                }
+                // bottom
+                else if (outAngle == 270)
+                {
+                    set = true;
+                    int maxY = Math.Min(Source.Location.Y, Target.Location.Y) + 10;
+                    p2 = new Point(Source.Location.X, maxY);
+                    p3 = new Point(Target.Location.X, maxY);
+                }
+
+                if (set)
+                {
+                    path.AddLine(p1, p2);
+                    path.AddLine(p2, p3);
+                    end = p3;
+                }
+            }
+            // different axes
+            else
+            {
+                Point p1 = Source.Location, p2 = new Point(), p3 = new Point(), p4 = new Point();
+                // out right or left
+                if (outAngle == 0 || outAngle == 180)
+                {
+                    // in bottom or top
+                    if (inAngle == 90 || inAngle == 270)
+                    {
+                        bool comp;
+                        int xOff = 10;
+                        if (outAngle == 0)
+                        {
+                            comp = Source.Location.X < Target.Location.X;
+                        }
+                        else
+                        {
+                            comp = Source.Location.X > Target.Location.X;
+                            xOff *= -1;
+                        }
+
+                        if (comp)
+                        {
+                            p2 = new Point(Target.Location.X, Source.Location.Y);
+                            path.AddLine(p1, p2);
+                            end = p2;
+                        }
+                        else
+                        {
+                            int yOff = -10;
+                            if (inAngle == 90)
+                                yOff *= -1;
+
+                            p2 = new Point(Source.Location.X + xOff, p1.Y);
+                            p3 = new Point(p2.X, Target.Location.Y + yOff);
+                            p4 = new Point(Target.Location.X, p3.Y);
+                            path.AddLine(p1, p2);
+                            path.AddLine(p2, p3);
+                            path.AddLine(p3, p4);
+                            end = p4;
+                        }
+                    }
+                }
+                // out bottom or top
+                if (outAngle == 90 || outAngle == 270)
+                {
+                    // in left or right
+                    if (inAngle == 0 || inAngle == 180)
+                    {
+                        bool comp;
+                        int yOff = 10;
+                        if (outAngle == 0)
+                        {
+                            comp = Source.Location.Y < Target.Location.Y;
+                            yOff *= -1;
+                        }
+                        else
+                        {
+                            comp = Source.Location.Y > Target.Location.Y;
+                        }
+
+                        if (comp)
+                        {
+                            p2 = new Point(Target.Location.X, Source.Location.Y);
+                            path.AddLine(p1, p2);
+                            end = p2;
+                        }
+                        else
+                        {
+                            int xOff = -10;
+                            if (inAngle == 90)
+                                xOff *= -1;
+
+                            p2 = new Point(p1.X, Source.Location.Y + yOff);
+                            p3 = new Point(Target.Location.X + xOff, p2.Y);
+                            p4 = new Point(p3.X, Target.Location.Y);
+                            path.AddLine(p1, p2);
+                            path.AddLine(p2, p3);
+                            path.AddLine(p3, p4);
+                            end = p4;
+                        }
+                    }
+                }
+            }
+
+            return end;
         }
     }
 }

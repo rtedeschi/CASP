@@ -39,10 +39,20 @@ namespace CASP_Standalone_Implementation.Forms
 
             node.drawn = true;
             FlowBlock block = GetFlowBlock(node);
-            block.id = node.index;
             panel.Controls.Add(block);
+            int preferredX;
 
-            int preferredX = parent != null ? parent.Center.X - block.Width / 2 : minX;
+            if (parent != null)
+            {
+                parent.children.Add(block);
+                block.parent = parent;
+                preferredX = parent.Center.X - block.Width / 2;
+            }
+            else
+            {
+                preferredX = minX;
+            }
+
             block.Location = new Point(Math.Max(minX, preferredX), y);
 
             newPoint = new Point(block.Right, block.Bottom);
@@ -61,8 +71,10 @@ namespace CASP_Standalone_Implementation.Forms
 
             Panel panel = new Panel();
             panel.AutoSize = true;
+            int yBuff = 30;
+            int xBuff = 30;
 
-            int y = 20;
+            int y = yBuff;
             List<FlowBlock> blocks = new List<FlowBlock>();
             Dictionary<int, FlowBlock> blockDictionary = new Dictionary<int, FlowBlock>();
             List<List<node>> levels = new List<List<node>>() { new List<node>() { new node() { parentFlow = null, children = new List<OutlineNode>() { head } } } };
@@ -71,7 +83,7 @@ namespace CASP_Standalone_Implementation.Forms
                 
                 List<node> nodes = levels[i];
                 int levelY = y;
-                int minX = 20;
+                int minX = xBuff;
                 for (int k = 0; k < nodes.Count; k++)
                 {
                     List<OutlineNode> n = nodes[k].children;
@@ -81,6 +93,7 @@ namespace CASP_Standalone_Implementation.Forms
                     {
                         OutlineNode node = n[j];
                         Point newCoords;
+
                         FlowBlock block = DrawNode(node, parent, panel, minX, levelY, out newCoords);
 
                         // TODO need to work on decisions
@@ -110,15 +123,15 @@ namespace CASP_Standalone_Implementation.Forms
 
                         blockDictionary.Add(node.index, block);
                         blocks.Add(block);
-                        
-                        minX = block.Right + 20;
+
+                        minX = block.Right + xBuff;
                         if (newCoords.Y > y)
                             y = newCoords.Y;
 
                     }
                 }
 
-                y += 20;
+                y += yBuff;
             }
 
             for (int i = 0; i < graph.edges.Count; i++)
@@ -185,6 +198,8 @@ namespace CASP_Standalone_Implementation.Forms
                     break;
             }
             block.UpdateSockets();
+            block.id = node.index;
+            block.type = node.type;
 
             return block;
         }
