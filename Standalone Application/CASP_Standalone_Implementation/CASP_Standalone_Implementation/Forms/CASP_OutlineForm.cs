@@ -34,15 +34,25 @@ namespace CASP_Standalone_Implementation.Forms
 
         }
 
-        private FlowBlock DrawNode(OutlineNode node, Panel panel, int x, int y, out Point newPoint)
+        private FlowBlock DrawNode(OutlineNode node, FlowBlock parent, Panel panel, int minX, int y, out Point newPoint)
         {
+
             node.drawn = true;
             FlowBlock block = GetFlowBlock(node);
             block.id = node.index;
-            block.Location = new Point(x, y);
             panel.Controls.Add(block);
+
+            int preferredX = parent != null ? parent.Center.X - block.Width / 2 : minX;
+            block.Location = new Point(Math.Max(minX, preferredX), y);
+
             newPoint = new Point(block.Right, block.Bottom);
             return block;
+        }
+
+        private class node
+        {
+            public FlowBlock parentFlow;
+            public List<OutlineNode> children;
         }
 
         private Panel BreadthFirstDraw(OutlineGraph graph)
@@ -55,31 +65,57 @@ namespace CASP_Standalone_Implementation.Forms
             int y = 20;
             List<FlowBlock> blocks = new List<FlowBlock>();
             Dictionary<int, FlowBlock> blockDictionary = new Dictionary<int, FlowBlock>();
-            List<List<OutlineNode>> levels = new List<List<OutlineNode>>() { new List<OutlineNode>() { head } };
+            List<List<node>> levels = new List<List<node>>() { new List<node>() { new node() { parentFlow = null, children = new List<OutlineNode>() { head } } } };
             for (int i = 0; i < levels.Count; i++)
             {
-                List<OutlineNode> nodes = levels[i];
+                
+                List<node> nodes = levels[i];
                 int levelY = y;
-                int x = 20;
-                for (int j = 0; j < nodes.Count; j++)
+                int minX = 20;
+                for (int k = 0; k < nodes.Count; k++)
                 {
-                    OutlineNode node = nodes[j];
-                    List<OutlineNode> newNodes = node.edges
-                        .Where(e => !e.target.drawn)
-                        .Select(e => e.target)
-                        .ToList();
-                    Point newCoords;
-                    FlowBlock block = DrawNode(node, panel, x, levelY, out newCoords);
-                    blocks.Add(block);
-                    blockDictionary.Add(node.index, block);
-                    x += newCoords.X + 20;
-                    if (newCoords.Y > y)
-                        y = newCoords.Y;
+                    List<OutlineNode> n = nodes[k].children;
+                    FlowBlock parent = nodes[k].parentFlow;
 
-                    if (levels.Count > i + 1)
-                        levels[i + 1].AddRange(newNodes);
-                    else
-                        levels.Add(newNodes);
+                    for (int j = 0; j < n.Count; j++)
+                    {
+                        OutlineNode node = n[j];
+                        Point newCoords;
+                        FlowBlock block = DrawNode(node, parent, panel, minX, levelY, out newCoords);
+
+                        // TODO need to work on decisions
+                        if (blockDictionary.ContainsKey(node.index))
+                        {
+                            FlowBlock old = blockDictionary[node.index];
+                            blockDictionary.Remove(node.index);
+                            blocks.Remove(old);
+                            panel.Controls.Remove(old);
+                        }
+                        else
+                        {
+                            node newNode = new node
+                            {
+                                parentFlow = block,
+                                children = node.edges
+                                .Where(e => !e.target.drawn)
+                                .Select(e => e.target)
+                                .ToList()
+                            };
+
+                            if (levels.Count > i + 1)
+                                levels[i + 1].Add(newNode);
+                            else
+                                levels.Add(new List<node>() { newNode });
+                        }
+
+                        blockDictionary.Add(node.index, block);
+                        blocks.Add(block);
+                        
+                        minX = block.Right + 20;
+                        if (newCoords.Y > y)
+                            y = newCoords.Y;
+
+                    }
                 }
 
                 y += 20;
