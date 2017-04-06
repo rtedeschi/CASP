@@ -244,6 +244,18 @@ namespace CASP_Standalone_Implementation.Forms
                 graphs.Add(graph);
             }
 
+            if (graphs.Count == 0)
+            {
+                OutlineGraph graph = new OutlineGraph();
+                graph.AddNode(new OutlineNode()
+                {
+                    index = 0,
+                    text = "No flowchart data\nto display!",
+                    type = BlockType.Process
+                });
+                graphs.Add(graph);
+            }
+
             return graphs;
         }
 
