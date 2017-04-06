@@ -14,7 +14,7 @@ namespace CASP_Standalone_Implementation
 {
     public partial class MainForm : Form
     {
-        public static string[] Languages 
+        public static string[] Languages
         {
             get
             {
@@ -37,17 +37,26 @@ namespace CASP_Standalone_Implementation
         public static string TempFilename = "CASP_Temp_Src.tmp";
 
         public string request;
+        private List<KeyValuePair<string, string>> customArgs = new List<KeyValuePair<string, string>>();
+
 
         private void UpdateRequest()
         {
-            try {
+            try
+            {
+
 
                 string module = ConsoleWrapper.GetArgument(ConsoleWrapper.ModuleId, ModuleCombo.SelectedItem.ToString());
                 string srclang = ConsoleWrapper.GetArgument(ConsoleWrapper.SourceLanguage, InputLanguageCombo.SelectedItem.ToString());
                 string code = ConsoleWrapper.GetArgument(ConsoleWrapper.CodeFile, TempFilename);
                 //string code = ConsoleWrapper.GetArgument(ConsoleWrapper.CodeSnippet, InputTextbox.Text);
+                List<string> requestData = customArgs.Select(kvp => ConsoleWrapper.GetFnArgument(kvp.Key, kvp.Value)).ToList();
+                requestData.Insert(0, code);
+                requestData.Insert(0, srclang);
+                requestData.Insert(0, module);
 
-                request = ConsoleWrapper.GenerateRequest(module, srclang, code);
+                //request = ConsoleWrapper.GenerateRequest(module, srclang, code);
+                request = ConsoleWrapper.GenerateRequest(requestData.ToArray());
                 RequestTextbox.Text = "CASP " + request;
 
             }
@@ -118,6 +127,38 @@ namespace CASP_Standalone_Implementation
         private void InputTextbox_TextChanged(object sender, EventArgs e)
         {
 
+        }
+
+        private void NewArgButton_Click(object sender, EventArgs e)
+        {
+            AddArgForm newArg = new AddArgForm(AddArgument);
+            newArg.Show();
+        }
+
+        private void AddArgument(string argName, string argValue)
+        {
+            customArgs.Add(new KeyValuePair<string, string>(argName, argValue));
+            UpdateArguments();
+        }
+
+        private void UpdateArguments()
+        {
+            OtherArgs.Items.Clear();
+            foreach (KeyValuePair<string, string> kvp in customArgs)
+            {
+                OtherArgs.Items.Add(kvp.Key + ": " + kvp.Value);
+            }
+            UpdateRequest();
+        }
+
+        private void RemoveArgs_Click(object sender, EventArgs e)
+        {
+            ListBox.SelectedIndexCollection indices = OtherArgs.SelectedIndices;
+            for (int i = indices.Count - 1; i >= 0; i--)
+            {
+                customArgs.RemoveAt(indices[i]);
+            }
+            UpdateArguments();
         }
     }
 }

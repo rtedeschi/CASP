@@ -50,6 +50,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Forms\AddArgForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\AddArgForm.Designer.cs">
+      <DependentUpon>AddArgForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Forms\CASP_OutlineForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -73,6 +79,9 @@
     <Compile Include="Src\CASP_OutputForm.cs" />
     <Compile Include="Src\ConsoleWrapper.cs" />
     <Compile Include="Src\Outline.cs" />
+    <EmbeddedResource Include="Forms\AddArgForm.resx">
+      <DependentUpon>AddArgForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Forms\CASP_OutlineForm.resx">
       <DependentUpon>CASP_OutlineForm.cs</DependentUpon>
     </EmbeddedResource>

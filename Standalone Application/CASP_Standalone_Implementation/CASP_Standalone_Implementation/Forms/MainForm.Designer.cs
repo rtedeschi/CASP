@@ -42,6 +42,10 @@ namespace CASP_Standalone_Implementation
             this.ProgramStatus = new System.Windows.Forms.ToolStripStatusLabel();
             this.ShowOutputCheckbox = new System.Windows.Forms.CheckBox();
             this.TitleLabel = new System.Windows.Forms.Label();
+            this.OtherArgsLabel = new System.Windows.Forms.Label();
+            this.OtherArgs = new System.Windows.Forms.ListBox();
+            this.NewArgButton = new System.Windows.Forms.Button();
+            this.RemoveArgs = new System.Windows.Forms.Button();
             this.StatusStrip.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -66,9 +70,9 @@ namespace CASP_Standalone_Implementation
             // 
             this.ModuleCombo.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.ModuleCombo.FormattingEnabled = true;
-            this.ModuleCombo.Location = new System.Drawing.Point(767, 12);
+            this.ModuleCombo.Location = new System.Drawing.Point(344, 12);
             this.ModuleCombo.Name = "ModuleCombo";
-            this.ModuleCombo.Size = new System.Drawing.Size(277, 24);
+            this.ModuleCombo.Size = new System.Drawing.Size(152, 24);
             this.ModuleCombo.TabIndex = 1;
             this.ModuleCombo.SelectedIndexChanged += new System.EventHandler(this.SelectedIndexChanged);
             // 
@@ -76,7 +80,7 @@ namespace CASP_Standalone_Implementation
             // 
             this.ModuleLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.ModuleLabel.AutoSize = true;
-            this.ModuleLabel.Location = new System.Drawing.Point(703, 15);
+            this.ModuleLabel.Location = new System.Drawing.Point(280, 15);
             this.ModuleLabel.Name = "ModuleLabel";
             this.ModuleLabel.Size = new System.Drawing.Size(58, 17);
             this.ModuleLabel.TabIndex = 2;
@@ -96,7 +100,7 @@ namespace CASP_Standalone_Implementation
             // 
             this.InputLanguageLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.InputLanguageLabel.AutoSize = true;
-            this.InputLanguageLabel.Location = new System.Drawing.Point(650, 45);
+            this.InputLanguageLabel.Location = new System.Drawing.Point(227, 45);
             this.InputLanguageLabel.Name = "InputLanguageLabel";
             this.InputLanguageLabel.Size = new System.Drawing.Size(111, 17);
             this.InputLanguageLabel.TabIndex = 5;
@@ -106,9 +110,9 @@ namespace CASP_Standalone_Implementation
             // 
             this.InputLanguageCombo.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.InputLanguageCombo.FormattingEnabled = true;
-            this.InputLanguageCombo.Location = new System.Drawing.Point(767, 42);
+            this.InputLanguageCombo.Location = new System.Drawing.Point(344, 42);
             this.InputLanguageCombo.Name = "InputLanguageCombo";
-            this.InputLanguageCombo.Size = new System.Drawing.Size(277, 24);
+            this.InputLanguageCombo.Size = new System.Drawing.Size(152, 24);
             this.InputLanguageCombo.TabIndex = 4;
             this.InputLanguageCombo.SelectedIndexChanged += new System.EventHandler(this.SelectedIndexChanged);
             // 
@@ -158,15 +162,63 @@ namespace CASP_Standalone_Implementation
             this.TitleLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.TitleLabel.Location = new System.Drawing.Point(12, 9);
             this.TitleLabel.Name = "TitleLabel";
-            this.TitleLabel.Size = new System.Drawing.Size(632, 53);
+            this.TitleLabel.Size = new System.Drawing.Size(209, 53);
             this.TitleLabel.TabIndex = 10;
             this.TitleLabel.Text = "Code Analyzer\r\nSoftware Project";
             // 
+            // OtherArgsLabel
+            // 
+            this.OtherArgsLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.OtherArgsLabel.AutoSize = true;
+            this.OtherArgsLabel.Location = new System.Drawing.Point(502, 15);
+            this.OtherArgsLabel.Name = "OtherArgsLabel";
+            this.OtherArgsLabel.Size = new System.Drawing.Size(146, 17);
+            this.OtherArgsLabel.TabIndex = 11;
+            this.OtherArgsLabel.Text = "Additional Arguments:";
+            // 
+            // OtherArgs
+            // 
+            this.OtherArgs.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.OtherArgs.FormattingEnabled = true;
+            this.OtherArgs.ItemHeight = 16;
+            this.OtherArgs.Location = new System.Drawing.Point(654, 12);
+            this.OtherArgs.Name = "OtherArgs";
+            this.OtherArgs.SelectionMode = System.Windows.Forms.SelectionMode.MultiSimple;
+            this.OtherArgs.Size = new System.Drawing.Size(229, 52);
+            this.OtherArgs.TabIndex = 12;
+            // 
+            // NewArgButton
+            // 
+            this.NewArgButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.NewArgButton.Location = new System.Drawing.Point(889, 9);
+            this.NewArgButton.Name = "NewArgButton";
+            this.NewArgButton.Size = new System.Drawing.Size(155, 27);
+            this.NewArgButton.TabIndex = 13;
+            this.NewArgButton.Text = "New";
+            this.NewArgButton.UseVisualStyleBackColor = true;
+            this.NewArgButton.Click += new System.EventHandler(this.NewArgButton_Click);
+            // 
+            // RemoveArgs
+            // 
+            this.RemoveArgs.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.RemoveArgs.Location = new System.Drawing.Point(889, 39);
+            this.RemoveArgs.Name = "RemoveArgs";
+            this.RemoveArgs.Size = new System.Drawing.Size(155, 27);
+            this.RemoveArgs.TabIndex = 14;
+            this.RemoveArgs.Text = "Remove Selected";
+            this.RemoveArgs.UseVisualStyleBackColor = true;
+            this.RemoveArgs.Click += new System.EventHandler(this.RemoveArgs_Click);
+            // 
             // MainForm
             // 
+            this.AcceptButton = this.ExecuteButton;
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1056, 543);
+            this.Controls.Add(this.RemoveArgs);
+            this.Controls.Add(this.NewArgButton);
+            this.Controls.Add(this.OtherArgs);
+            this.Controls.Add(this.OtherArgsLabel);
             this.Controls.Add(this.TitleLabel);
             this.Controls.Add(this.ShowOutputCheckbox);
             this.Controls.Add(this.StatusStrip);
@@ -177,7 +229,7 @@ namespace CASP_Standalone_Implementation
             this.Controls.Add(this.ModuleLabel);
             this.Controls.Add(this.ModuleCombo);
             this.Controls.Add(this.InputTextbox);
-            this.MinimumSize = new System.Drawing.Size(1000, 500);
+            this.MinimumSize = new System.Drawing.Size(1074, 500);
             this.Name = "MainForm";
             this.ShowIcon = false;
             this.Text = "C.A.S.P.";
@@ -202,6 +254,10 @@ namespace CASP_Standalone_Implementation
         private System.Windows.Forms.ToolStripStatusLabel ProgramStatus;
         private System.Windows.Forms.CheckBox ShowOutputCheckbox;
         private System.Windows.Forms.Label TitleLabel;
+        private System.Windows.Forms.Label OtherArgsLabel;
+        private System.Windows.Forms.ListBox OtherArgs;
+        private System.Windows.Forms.Button NewArgButton;
+        private System.Windows.Forms.Button RemoveArgs;
     }
 }
 

@@ -150,6 +150,9 @@ MODULE_RESPONSE ControlModule::ModuleExecution(MODULE_REF moduleRef, MARKUP_OBJE
 
 void ControlModule::FormatOutput(MODULE_RESPONSE moduleResponse) {
 
+    if (moduleResponse == NULL) 
+        moduleResponse = new CASP_Return();
+        
     cout << "CASP_RETURN_DATA_START\n";
     moduleResponse->Print();
     cout << "\nCASP_RETURN_DATA_END\n";

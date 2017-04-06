@@ -15,7 +15,7 @@ namespace CASP_Standalone_Implementation.Src
         public static string ModuleId = "moduleid";
         public static string CodeSnippet = "code";
         public static string CodeFile = "codef";
-        public static string FunctionArgument = "fnarg";
+        public static string FunctionArgument = "args";
         public static string SourceLanguage = "sourcelang";
 
         public static string GenerateRequest(params string[] data)
@@ -33,6 +33,12 @@ namespace CASP_Standalone_Implementation.Src
         public static string GetArgument(string type, string data)
         {
             return "/" + type + "=\"" + data + "\"";
+        }
+
+        public static string GetFnArgument(string type, string data)
+        {
+            var str = "/" + type + "=\\\"" + data + "\\\"";
+            return GetArgument(FunctionArgument, str);
         }
 
         public static async Task<string> Execute(string request)
