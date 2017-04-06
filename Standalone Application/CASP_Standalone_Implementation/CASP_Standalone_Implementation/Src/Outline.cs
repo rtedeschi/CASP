@@ -292,7 +292,7 @@ namespace CASP_Standalone_Implementation.Src
             targetSocket = target;
         }
 
-        public bool ConnectTo(FlowBlock block)
+        public bool ConnectTo(FlowBlock block, string data = "")
         {
             Socket sourceSocket;
             Socket targetSocket;
@@ -302,7 +302,7 @@ namespace CASP_Standalone_Implementation.Src
             {
                 Connector c = new Connector()
                 {
-                    data = ""
+                    data = data
                 };
                 sourceSocket.ConnectAsSource(c);
                 targetSocket.ConnectAsTarget(c);
@@ -313,48 +313,47 @@ namespace CASP_Standalone_Implementation.Src
 
         private void FlowBlock_Paint(object sender, PaintEventArgs e)
         {
+            Pen pen = Pens.Black;
+            Brush brush = Brushes.Black;
+
             int size = 10;
             int hs = size / 2;
 
             if (TopSocket.Unused)
-                e.Graphics.DrawEllipse(Pens.Black, new Rectangle(TopSocket.LocalLocation.X - hs, TopSocket.LocalLocation.Y - hs, size, size));
+                e.Graphics.DrawEllipse(pen, new Rectangle(TopSocket.LocalLocation.X - hs, TopSocket.LocalLocation.Y - hs, size, size));
             else
-                e.Graphics.FillEllipse(Brushes.Black, new Rectangle(TopSocket.LocalLocation.X - hs, TopSocket.LocalLocation.Y - hs, size, size));
+                e.Graphics.FillEllipse(brush, new Rectangle(TopSocket.LocalLocation.X - hs, TopSocket.LocalLocation.Y - hs, size, size));
 
             if (BottomSocket.Unused)
-                e.Graphics.DrawEllipse(Pens.Black, new Rectangle(BottomSocket.LocalLocation.X - hs, BottomSocket.LocalLocation.Y - hs, size, size));
+                e.Graphics.DrawEllipse(pen, new Rectangle(BottomSocket.LocalLocation.X - hs, BottomSocket.LocalLocation.Y - hs, size, size));
             else
-                e.Graphics.FillEllipse(Brushes.Black, new Rectangle(BottomSocket.LocalLocation.X - hs, BottomSocket.LocalLocation.Y - hs, size, size));
+                e.Graphics.FillEllipse(brush, new Rectangle(BottomSocket.LocalLocation.X - hs, BottomSocket.LocalLocation.Y - hs, size, size));
 
             if (LeftSocket.Unused)
-                e.Graphics.DrawEllipse(Pens.Black, new Rectangle(LeftSocket.LocalLocation.X - hs, LeftSocket.LocalLocation.Y - hs, size, size));
+                e.Graphics.DrawEllipse(pen, new Rectangle(LeftSocket.LocalLocation.X - hs, LeftSocket.LocalLocation.Y - hs, size, size));
             else
-                e.Graphics.FillEllipse(Brushes.Black, new Rectangle(LeftSocket.LocalLocation.X - hs, LeftSocket.LocalLocation.Y - hs, size, size));
+                e.Graphics.FillEllipse(brush, new Rectangle(LeftSocket.LocalLocation.X - hs, LeftSocket.LocalLocation.Y - hs, size, size));
 
             if (RightSocket.Unused)
-                e.Graphics.DrawEllipse(Pens.Black, new Rectangle(RightSocket.LocalLocation.X - hs, RightSocket.LocalLocation.Y - hs, size, size));
+                e.Graphics.DrawEllipse(pen, new Rectangle(RightSocket.LocalLocation.X - hs, RightSocket.LocalLocation.Y - hs, size, size));
             else
-                e.Graphics.FillEllipse(Brushes.Black, new Rectangle(RightSocket.LocalLocation.X - hs, RightSocket.LocalLocation.Y - hs, size, size));
+                e.Graphics.FillEllipse(brush, new Rectangle(RightSocket.LocalLocation.X - hs, RightSocket.LocalLocation.Y - hs, size, size));
 
         }
 
-        public List<GraphicsPath> GetEdgeGraphics()
+        public void RenderEdgeGraphics(Graphics g)
         {
-            List<GraphicsPath> paths = new List<GraphicsPath>();
-
             if (!TopSocket.Unused && TopSocket.isSource)
-                paths.Add(TopSocket.Connector.GetGraphicsPath());
+                TopSocket.Connector.RenderGraphicsPath(g);
 
             if (!BottomSocket.Unused && BottomSocket.isSource)
-                paths.Add(BottomSocket.Connector.GetGraphicsPath());
+                BottomSocket.Connector.RenderGraphicsPath(g);
 
             if (!LeftSocket.Unused && LeftSocket.isSource)
-                paths.Add(LeftSocket.Connector.GetGraphicsPath());
+                LeftSocket.Connector.RenderGraphicsPath(g);
 
             if (!RightSocket.Unused && RightSocket.isSource)
-                paths.Add(RightSocket.Connector.GetGraphicsPath());
-
-            return paths;
+                RightSocket.Connector.RenderGraphicsPath(g);
         }
     }
 
@@ -470,33 +469,40 @@ namespace CASP_Standalone_Implementation.Src
 
         public string data;
 
-        public GraphicsPath GetGraphicsPath()
+        public void RenderGraphicsPath(Graphics g)
         {
-            GraphicsPath path = new GraphicsPath();
-
             if (Source != null && Target != null)
             {
-                int arrowLen = 6;
+                RenderArrow(g, Pens.SlateGray, Brushes.SlateGray, 60, 8);
 
-                Point source = intermediateArrowPath(path);
-                Point target = Target.Location;
+                int fontSize = 10;
+                PointF pt = Source.Location;
+                StringFormatFlags flags = StringFormatFlags.NoWrap;
+                if (Source.outAngle == 0 || Source.outAngle == 180)
+                {
+                    flags = flags | StringFormatFlags.DirectionVertical;
+                }
+                StringFormat sf = new StringFormat(flags);
+                FontFamily fam = new FontFamily("microsoft sans serif");
+                Font font = new Font(fam, fontSize);
 
-                double initialAngleDeg = Math.Atan2(target.Y - source.Y, target.X - source.X) * 180 / Math.PI;
-                double angleLRad = (initialAngleDeg - 180 + 45 / 2) * Math.PI / 180;
-                double angleRRad = (initialAngleDeg - 180 - 45 / 2) * Math.PI / 180;
+                SizeF size = g.MeasureString(data, font);
 
-                Point arrowL = new Point(target.X + (int)(arrowLen * Math.Cos(angleLRad)), target.Y + (int)(arrowLen * Math.Sin(angleLRad)));
-                Point arrowR = new Point(target.X + (int)(arrowLen * Math.Cos(angleRRad)), target.Y + (int)(arrowLen * Math.Sin(angleRRad)));
+                if (Source.outAngle == 0)
+                    pt = new PointF(pt.X + 3 - size.Height / 2, pt.Y - size.Width / 2);
+                else if (Source.outAngle == 180)
+                    pt = new PointF(pt.X - 3 - size.Height / 2, pt.Y - size.Width / 2);
+                else if (Source.outAngle == 90)
+                    pt = new PointF(pt.X - size.Width / 2, pt.Y - 3 - size.Height / 2);
+                else if (Source.outAngle == 270)
+                    pt = new PointF(pt.X - size.Width / 2, pt.Y + 3 - size.Height / 2);
 
-                path.AddLine(source, target);
-                path.AddLine(target, arrowL);
-                path.AddLine(target, arrowR);
+                
+                g.DrawString(data, font, Brushes.Black, pt, sf);
             }
-
-            return path;
         }
 
-        private Point intermediateArrowPath(GraphicsPath path)
+        private void RenderArrow(Graphics g, Pen pen, Brush brush, int arrowAngle, int arrowLength)
         {
             Point end = Source.Location;
 
@@ -515,8 +521,8 @@ namespace CASP_Standalone_Implementation.Src
                         Point p1 = Source.Location;
                         Point p2 = new Point(Source.Location.X, hy);
                         Point p3 = new Point(Target.Location.X, hy);
-                        path.AddLine(p1, p2);
-                        path.AddLine(p2, p3);
+                        g.DrawLine(pen, p1, p2);
+                        g.DrawLine(pen, p2, p3);
                         end = p3;
                     }
                 }
@@ -529,8 +535,8 @@ namespace CASP_Standalone_Implementation.Src
                         Point p1 = Source.Location;
                         Point p2 = new Point(hx, Source.Location.Y);
                         Point p3 = new Point(hx, Target.Location.Y);
-                        path.AddLine(p1, p2);
-                        path.AddLine(p2, p3);
+                        g.DrawLine(pen, p1, p2);
+                        g.DrawLine(pen, p2, p3);
                         end = p3;
                     }
                 }
@@ -575,8 +581,8 @@ namespace CASP_Standalone_Implementation.Src
 
                 if (set)
                 {
-                    path.AddLine(p1, p2);
-                    path.AddLine(p2, p3);
+                    g.DrawLine(pen, p1, p2);
+                    g.DrawLine(pen, p2, p3);
                     end = p3;
                 }
             }
@@ -605,7 +611,7 @@ namespace CASP_Standalone_Implementation.Src
                         if (comp)
                         {
                             p2 = new Point(Target.Location.X, Source.Location.Y);
-                            path.AddLine(p1, p2);
+                            g.DrawLine(pen, p1, p2);
                             end = p2;
                         }
                         else
@@ -617,9 +623,9 @@ namespace CASP_Standalone_Implementation.Src
                             p2 = new Point(Source.Location.X + xOff, p1.Y);
                             p3 = new Point(p2.X, Target.Location.Y + yOff);
                             p4 = new Point(Target.Location.X, p3.Y);
-                            path.AddLine(p1, p2);
-                            path.AddLine(p2, p3);
-                            path.AddLine(p3, p4);
+                            g.DrawLine(pen, p1, p2);
+                            g.DrawLine(pen, p2, p3);
+                            g.DrawLine(pen, p3, p4);
                             end = p4;
                         }
                     }
@@ -632,41 +638,52 @@ namespace CASP_Standalone_Implementation.Src
                     {
                         bool comp;
                         int yOff = 10;
-                        if (outAngle == 0)
+                        if (outAngle == 90)
                         {
-                            comp = Source.Location.Y < Target.Location.Y;
+                            comp = Source.Location.Y > Target.Location.Y;
                             yOff *= -1;
                         }
                         else
                         {
-                            comp = Source.Location.Y > Target.Location.Y;
+                            comp = Source.Location.Y < Target.Location.Y;
                         }
 
                         if (comp)
                         {
-                            p2 = new Point(Target.Location.X, Source.Location.Y);
-                            path.AddLine(p1, p2);
+                            p2 = new Point(Source.Location.X, Target.Location.Y);
+                            g.DrawLine(pen, p1, p2);
                             end = p2;
                         }
                         else
                         {
-                            int xOff = -10;
+                            int xOff = 10;
                             if (inAngle == 90)
                                 xOff *= -1;
 
                             p2 = new Point(p1.X, Source.Location.Y + yOff);
                             p3 = new Point(Target.Location.X + xOff, p2.Y);
                             p4 = new Point(p3.X, Target.Location.Y);
-                            path.AddLine(p1, p2);
-                            path.AddLine(p2, p3);
-                            path.AddLine(p3, p4);
+                            g.DrawLine(pen, p1, p2);
+                            g.DrawLine(pen, p2, p3);
+                            g.DrawLine(pen, p3, p4);
                             end = p4;
                         }
                     }
                 }
             }
 
-            return end;
+            Point source = end;
+            Point target = Target.Location;
+
+            double initialAngleDeg = Math.Atan2(target.Y - source.Y, target.X - source.X) * 180 / Math.PI;
+            double angleLRad = (initialAngleDeg - 180 + arrowAngle / 2) * Math.PI / 180;
+            double angleRRad = (initialAngleDeg - 180 - arrowAngle / 2) * Math.PI / 180;
+
+            Point arrowL = new Point(target.X + (int)(arrowLength * Math.Cos(angleLRad)), target.Y + (int)(arrowLength * Math.Sin(angleLRad)));
+            Point arrowR = new Point(target.X + (int)(arrowLength * Math.Cos(angleRRad)), target.Y + (int)(arrowLength * Math.Sin(angleRRad)));
+
+            g.FillPolygon(brush, new Point[] { target, arrowL, arrowR });
+            g.DrawLine(pen, source, target);
         }
     }
 }

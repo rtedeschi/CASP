@@ -166,7 +166,7 @@ Node* OutlineModule::stripDecision(Markup* parseTree, Outline* outline, Node* st
             currentNode->AddEdgeTo(endDecision);
         }
     } else {
-        currentDecisionHead->AddEdgeTo(endDecision, "FALSE");
+        currentDecisionHead->AddEdgeTo(endDecision, "False");
     }
 
     return outline->AppendBlock(endDecision);

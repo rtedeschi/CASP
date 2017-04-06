@@ -11,6 +11,8 @@ namespace CASP_Standalone_Implementation.Forms
 {
     public partial class CASP_OutlineForm : CASP_OutputForm // Form
     {
+        Pen blockPen = Pens.Gray;
+        
         public CASP_OutlineForm()
         {
             InitializeComponent();
@@ -24,7 +26,7 @@ namespace CASP_Standalone_Implementation.Forms
             for (int i = 0; i < graphs.Count; i++)
             {
                 Panel p = BreadthFirstDraw(graphs[i]);
-                p.BorderStyle = BorderStyle.FixedSingle;
+                //p.BorderStyle = BorderStyle.FixedSingle;
                 p.Location = new Point(x, 0);
                 FlowPanel.Controls.Add(p);
 
@@ -140,27 +142,23 @@ namespace CASP_Standalone_Implementation.Forms
                 FlowBlock source = blockDictionary[edge.source.index];
                 FlowBlock target = blockDictionary[edge.target.index];
 
-                if (!source.ConnectTo(target))
+                if (!source.ConnectTo(target, edge.text))
                 {
                     // uh-oh... not enough space on the node. Should only happen on switch, which we don't have
                 }
             }
 
-            DrawEdges(blocks, panel);
+            RenderEdges(blocks, panel);
 
             return panel;
         }
 
-        private void DrawEdges(List<FlowBlock> blocks, Panel panel)
+        private void RenderEdges(List<FlowBlock> blocks, Panel panel)
         {
-            List<GraphicsPath> paths = new List<GraphicsPath>();
-            for (int i = 0; i < blocks.Count; i++)
-                paths.AddRange(blocks[i].GetEdgeGraphics());
-
             panel.Paint += (object sender, PaintEventArgs e) =>
             {
-                for (int i = 0; i < paths.Count; i++)
-                    e.Graphics.DrawPath(Pens.Black, paths[i]);
+                for (int i = 0; i < blocks.Count; i++)
+                    blocks[i].RenderEdgeGraphics(e.Graphics);
             };
         }
 
@@ -176,7 +174,7 @@ namespace CASP_Standalone_Implementation.Forms
                     block = GetFlowEnd(node.text);
                     break;
                 case BlockType.EndDecision:
-                    block = GetFlowProcess(node.text);
+                    block = GetFlowSink(node.text);
                     break;
                 //case BlockType.IO:
                 //    block = GetFlowDecision(node.text);
@@ -270,6 +268,14 @@ namespace CASP_Standalone_Implementation.Forms
             return flowblock;
         }
 
+        FlowBlock GetFlowSink(string text)
+        {
+            FlowBlock flowblock = CreateFlowblock("");
+            flowblock.Width = flowblock.Height = 53;
+            flowblock.Paint += PaintFlowblockSink;
+            return flowblock;
+        }
+
         FlowBlock GetFlowMethod(string text)
         {
             FlowBlock flowblock = CreateFlowblock(text);
@@ -286,72 +292,77 @@ namespace CASP_Standalone_Implementation.Forms
 
         private void PaintFlowblockEnd(object sender, PaintEventArgs e)
         {
-            Pen pen = Pens.Black;
             int left, right, top, bottom, centerX, centerY;
             ReadFlowblockData(sender, out left, out right, out top, out bottom, out centerX, out centerY);
 
             Graphics g = e.Graphics;
-            g.DrawArc(pen, new Rectangle(left - 5, top, 10, bottom - top), 90, 180);
-            g.DrawLine(pen, left, top, right, top);
-            g.DrawArc(pen, new Rectangle(right - 5, top, 10, bottom - top), -90, 180);
-            g.DrawLine(pen, right, bottom, left, bottom);
+            g.DrawArc(blockPen, new Rectangle(left - 5, top, 10, bottom - top), 90, 180);
+            g.DrawLine(blockPen, left, top, right, top);
+            g.DrawArc(blockPen, new Rectangle(right - 5, top, 10, bottom - top), -90, 180);
+            g.DrawLine(blockPen, right, bottom, left, bottom);
         }
 
         private void PaintFlowblockProcess(object sender, PaintEventArgs e)
         {
-            Pen pen = Pens.Black;
             int left, right, top, bottom, centerX, centerY;
             ReadFlowblockData(sender, out left, out right, out top, out bottom, out centerX, out centerY);
 
             Graphics g = e.Graphics;
-            g.DrawLine(pen, left, top, right, top);
-            g.DrawLine(pen, right, top, right, bottom);
-            g.DrawLine(pen, right, bottom, left, bottom);
-            g.DrawLine(pen, left, bottom, left, top);
+            g.DrawLine(blockPen, left, top, right, top);
+            g.DrawLine(blockPen, right, top, right, bottom);
+            g.DrawLine(blockPen, right, bottom, left, bottom);
+            g.DrawLine(blockPen, left, bottom, left, top);
         }
 
         private void PaintFlowblockDecision(object sender, PaintEventArgs e)
         {
-            Pen pen = Pens.Black;
             int left, right, top, bottom, centerX, centerY;
             ReadFlowblockData(sender, out left, out right, out top, out bottom, out centerX, out centerY);
 
             Graphics g = e.Graphics;
-            g.DrawLine(pen, centerX, top - 8, right + 8, centerY);
-            g.DrawLine(pen, right + 8, centerY, centerX, bottom + 8);
-            g.DrawLine(pen, centerX, bottom + 8, left - 8, centerY);
-            g.DrawLine(pen, left - 8, centerY, centerX, top - 8);
+            g.DrawLine(blockPen, centerX, top - 8, right + 8, centerY);
+            g.DrawLine(blockPen, right + 8, centerY, centerX, bottom + 8);
+            g.DrawLine(blockPen, centerX, bottom + 8, left - 8, centerY);
+            g.DrawLine(blockPen, left - 8, centerY, centerX, top - 8);
         }
 
         private void PaintFlowblockMethod(object sender, PaintEventArgs e)
         {
-            Pen pen = Pens.Black;
             int left, right, top, bottom, centerX, centerY;
             ReadFlowblockData(sender, out left, out right, out top, out bottom, out centerX, out centerY);
 
             Graphics g = e.Graphics;
-            g.DrawLine(pen, left - 5, top, right + 5, top);
-            g.DrawLine(pen, right + 5, top, right + 5, bottom);
-            g.DrawLine(pen, right, top, right, bottom);
-            g.DrawLine(pen, right + 5, bottom, left - 5, bottom);
-            g.DrawLine(pen, left - 5, bottom, left - 5, top);
-            g.DrawLine(pen, left, bottom, left, top);
+            g.DrawLine(blockPen, left - 5, top, right + 5, top);
+            g.DrawLine(blockPen, right + 5, top, right + 5, bottom);
+            g.DrawLine(blockPen, right, top, right, bottom);
+            g.DrawLine(blockPen, right + 5, bottom, left - 5, bottom);
+            g.DrawLine(blockPen, left - 5, bottom, left - 5, top);
+            g.DrawLine(blockPen, left, bottom, left, top);
         }
 
         private void PaintFlowblockLoop(object sender, PaintEventArgs e)
         {
-            Pen pen = Pens.Black;
             int left, right, top, bottom, centerX, centerY;
             ReadFlowblockData(sender, out left, out right, out top, out bottom, out centerX, out centerY);
 
             Graphics g = e.Graphics;
-            g.DrawLine(pen, left + 5, top, right - 5, top);
-            g.DrawLine(pen, right - 5, top, right + 5, centerY);
-            g.DrawLine(pen, right + 5, centerY, right - 5, bottom);
-            g.DrawLine(pen, right - 5, bottom, left + 5, bottom);
-            g.DrawLine(pen, left + 5, bottom, left - 5, centerY);
-            g.DrawLine(pen, left - 5, centerY, left + 5, top);
+            g.DrawLine(blockPen, left + 5, top, right - 5, top);
+            g.DrawLine(blockPen, right - 5, top, right + 5, centerY);
+            g.DrawLine(blockPen, right + 5, centerY, right - 5, bottom);
+            g.DrawLine(blockPen, right - 5, bottom, left + 5, bottom);
+            g.DrawLine(blockPen, left + 5, bottom, left - 5, centerY);
+            g.DrawLine(blockPen, left - 5, centerY, left + 5, top);
         }
+
+        private void PaintFlowblockSink(object sender, PaintEventArgs e)
+        {
+            int left, right, top, bottom, centerX, centerY;
+            ReadFlowblockData(sender, out left, out right, out top, out bottom, out centerX, out centerY);
+
+            Graphics g = e.Graphics;
+            g.DrawEllipse(blockPen, new Rectangle(left, top, right - left, bottom - top));
+        }
+
 
         private FlowBlock CreateFlowblock(string text)
         {
@@ -370,7 +381,7 @@ namespace CASP_Standalone_Implementation.Forms
             flowblock.Width = width + 40;
             flowblock.Height = height + 40;
 
-            //flowblock.BorderStyle = BorderStyle.FixedSingle;
+            //flowblock.BorderStyle = BorderStyle.Fixed3D;
 
             return flowblock;
         }

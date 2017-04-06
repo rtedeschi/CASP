@@ -13,6 +13,17 @@ int outline_example(int a, bool b) {
     display(c);
     display(a);
     display(b);
+
+    if (d) {
+        do_this();
+    }
+
+    if (!d)
+        do_this();
+    else if (c)
+        do_that();
+    else
+        noop();
     
 }
 

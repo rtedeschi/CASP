@@ -33,8 +33,10 @@
             // 
             // OutputTextbox
             // 
+            this.OutputTextbox.BackColor = System.Drawing.SystemColors.ActiveCaptionText;
             this.OutputTextbox.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.OutputTextbox.Font = new System.Drawing.Font("Courier New", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.OutputTextbox.Font = new System.Drawing.Font("Courier New", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.OutputTextbox.ForeColor = System.Drawing.Color.Lime;
             this.OutputTextbox.Location = new System.Drawing.Point(0, 0);
             this.OutputTextbox.Multiline = true;
             this.OutputTextbox.Name = "OutputTextbox";
@@ -42,7 +44,6 @@
             this.OutputTextbox.ScrollBars = System.Windows.Forms.ScrollBars.Both;
             this.OutputTextbox.Size = new System.Drawing.Size(1082, 591);
             this.OutputTextbox.TabIndex = 7;
-            this.OutputTextbox.WordWrap = false;
             // 
             // OutputForm
             // 
@@ -51,7 +52,8 @@
             this.ClientSize = new System.Drawing.Size(1082, 591);
             this.Controls.Add(this.OutputTextbox);
             this.Name = "OutputForm";
-            this.Text = "C.A.S.P. Output";
+            this.ShowIcon = false;
+            this.Text = "C.A.S.P. Console Output";
             this.ResumeLayout(false);
             this.PerformLayout();
 

@@ -117,35 +117,6 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="InputTextbox.Text" xml:space="preserve">
-    <value>int outline_example(int a, bool b) {
-
-    int c = a + b;
-
-    bool d = a || b;
-
-    for (int i = 0; i &lt; 10; i++) {
-        
-        c = c + i;
-
-    }
-
-    display(c);
-    display(a);
-    display(b);
-
-    if (d) {
-        do_this();
-    }
-    
-}
-
-int display(void a) {
-
-    do_something_with_input(a);
-
-}</value>
-  </data>
   <metadata name="StatusStrip.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>17, 17</value>
   </metadata>

@@ -33,6 +33,7 @@
             // 
             // FlowPanel
             // 
+            this.FlowPanel.AutoScroll = true;
             this.FlowPanel.Dock = System.Windows.Forms.DockStyle.Fill;
             this.FlowPanel.Location = new System.Drawing.Point(0, 0);
             this.FlowPanel.Name = "FlowPanel";
@@ -46,7 +47,8 @@
             this.ClientSize = new System.Drawing.Size(738, 478);
             this.Controls.Add(this.FlowPanel);
             this.Name = "CASP_OutlineForm";
-            this.Text = "CASP_OutlineForm";
+            this.ShowIcon = false;
+            this.Text = "C.A.S.P Outline Module";
             this.ResumeLayout(false);
 
         }
