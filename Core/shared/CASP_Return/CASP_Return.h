@@ -8,6 +8,7 @@
 #ifndef CASP_RETURN_H
 #define CASP_RETURN_H
 
+#include <iostream>
 #include <algorithm>
 #include <string>
 #include <unordered_map>
@@ -19,7 +20,7 @@ using namespace std;
 class GenericData : public Printable {
     public:
         string type = "";
-        virtual void Print() {};
+        virtual void Print();
 };
 
 template<typename T>
@@ -45,29 +46,9 @@ class GenericLeaf : public GenericData {
 class GenericObject : public GenericData {
     public:
         string type = "Object";
-        virtual void Print() {
-            int count = 0;
-            cout << "{";
-            for (auto it = data.begin(); it != data.end(); ++it ) {
-                if (count++ > 0) {
-                    cout << ",";
-                }
-                cout << "\"" << it->first << "\":";
-                if (it->second != NULL)
-                    it->second->Print();
-                else
-                    cout << "null";
-            }
-            cout << "}";
-        };
-
-        void Add(string key, GenericData* d) {
-            data[key] = d;
-        };
-
-        GenericData* At(string key) {
-            return data[key];
-        };
+        virtual void Print();
+        void Add(string, GenericData*);
+        GenericData* At(string);
 
     protected:
         unordered_map<string, GenericData*> data;
@@ -77,23 +58,10 @@ class GenericObject : public GenericData {
 class GenericArray : public GenericData {
     public:
         string type = "Array";
-        virtual void Print() {
-            cout << "[";
-            for (int i = 0; i < data.size(); i++) {
-                if (i > 0)
-                    cout << ",";
-                data[i]->Print();
-            }
-            cout << "]";
-        };
+        virtual void Print();
+        void Add(GenericData*);
+        GenericData* At(int);
 
-        void Add(GenericData* d) {
-            data.push_back(d);
-        };
-
-        GenericData* At(int index) {
-            return data[index];
-        }
     
     protected:
         vector<GenericData*> data;
@@ -101,21 +69,11 @@ class GenericArray : public GenericData {
 
 class CASP_Return : public GenericObject {
     public:
-        CASP_Return() {
-            Add("Data", new GenericObject());
-            Add("Warnings", new GenericObject());
-            Add("Errors", new GenericObject());
-        };
+        CASP_Return();
 
-        GenericObject* Errors() {
-            return (GenericObject*)data["Errors"];
-        };
-        GenericObject* Warnings() {
-            return (GenericObject*)data["Warnings"];
-        };
-        GenericObject* Data() {
-            return (GenericObject*)data["Data"];
-        };
+        GenericObject* Errors();
+        GenericObject* Warnings();
+        GenericObject* Data();
     
     private:
 };
