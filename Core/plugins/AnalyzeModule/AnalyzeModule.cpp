@@ -4,7 +4,7 @@ static string _AnalyzeModule = RegisterPlugin("Analyze", new AnalyzeModule());
 
 AnalyzeModule::AnalyzeModule() {}
 
-void AnalyzeModule::Execute(Markup* markup, string* fnArgs, int fnArgCount) {
+CASP_Return* AnalyzeModule::Execute(Markup* markup, string* fnArgs, int fnArgCount) {
 
     /*
         This module hasn't implemented any Function Args yet!
@@ -13,8 +13,27 @@ void AnalyzeModule::Execute(Markup* markup, string* fnArgs, int fnArgCount) {
 
     cout << "This is the entry point for the " << _AnalyzeModule << " Module!\n";
 
+    return NULL;
 }
 
+vector<Outline*> AnalyzeModule::GetAllAnalysis(Markup* masterTree) {
+    vector<Outline*> outlines;
+    vector<Markup*> functions = masterTree->FindAllById("function-definition", true);
+    vector<Markup*> sls = masterTree->FindAllChildrenById("statement-list");
+
+    if (sls.size() > 0) {
+        outlines.push_back(GetRootOutline(sls));
+    }
+    if (functions.size() > 0) {
+        for (int i = 0; i < functions.size(); i++) {
+            outlines.push_back(GetFunctionOutline(functions[i]));
+        }
+    }
+
+    return outlines;
+}
+
+Outline* AnalyzeModule::GetRootAnalyze(vector<Markup*> parseTrees) {
 
     string functionTitle = "ROOT";
 
@@ -130,49 +149,4 @@ Node* AnalyzeModule::processStatement(Markup* statement, Analyze* Analyze, Node*
     cout << "e" << endl;
 
     return currentNode;
-}
-
-//findby functions
-
-Markup* Markup::FindFirstChildById(string id) {
-    Markup* result = NULL;
-
-    for (int i = 0; i < children.size(); i++) {
-        if (children[i]->id == id) {
-            result = children[i];
-            break;
-        }
-    }
-    
-    return result;
-}
-
-vector<Markup*> Markup::FindAllById(string id, bool findChildrenOfMatches) {
-    vector<Markup*> results;
-
-    if (this->id == id) {
-        results.push_back(this);
-    }
-
-    if (this->id != id || findChildrenOfMatches) {
-        for (int i = 0; i < children.size(); i++) {
-            vector<Markup*> v = children[i]->FindAllById(id, findChildrenOfMatches);
-            results.insert(results.end(), v.begin(), v.end());
-        }
-    }
-
-    return results;
-}
-
-Markup* Markup::FindFirstById(string id) {
-    Markup* result = NULL;
-    if (this->id == id) {
-        result = this;
-    } else {
-        for (int i = 0; i < children.size(); i++) {
-            if ((result = children[i]->FindFirstById(id)) != NULL)
-                break;
-        }
-    }
-    return result;
 }

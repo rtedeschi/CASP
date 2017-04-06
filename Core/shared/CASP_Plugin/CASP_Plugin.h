@@ -12,13 +12,13 @@
 #include <string>
 #include <unordered_map>
 #include "../Markup/Markup.h"
+#include "../CASP_Return/CASP_Return.h"
 
 using namespace std;
 
 class CASP_Plugin {
     public:
-        // TODO change void to some module return datatype
-        virtual void Execute(Markup*, string*, int) = 0;
+        virtual CASP_Return* Execute(Markup*, string*, int) = 0;
         // Markup data, function args, function arg count
 };
 

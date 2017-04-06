@@ -16,12 +16,11 @@ ControlModule::~ControlModule() {
 
 }
 
-FORMATTED_RESULTS ControlModule::Run(SOURCE_LANGUAGE sourceLanguage, MODULE_ID moduleID, CODE_COUNT codeCount, CODE_INPUT codeSnippets, ARG_COUNT argCount, FUNCTION_ARGS functionArgs) {
+void ControlModule::Run(SOURCE_LANGUAGE sourceLanguage, MODULE_ID moduleID, CODE_COUNT codeCount, CODE_INPUT codeSnippets, ARG_COUNT argCount, FUNCTION_ARGS functionArgs) {
 
     LANGUAGE_DESCRIPTOR_OBJECT descriptor = NULL;
     CODE_OUTPUT code = NULL;
     MARKUP_OBJECT markup = NULL;
-    FORMATTED_RESULTS results = NULL;
 
     try {
         descriptor = GetLanguageDescriptor(sourceLanguage);
@@ -34,9 +33,7 @@ FORMATTED_RESULTS ControlModule::Run(SOURCE_LANGUAGE sourceLanguage, MODULE_ID m
 
     }
 
-    results = Execute(markup, moduleID, argCount, functionArgs);
-
-    return results;
+    Execute(markup, moduleID, argCount, functionArgs);
 }
 
 LANGUAGE_DESCRIPTOR_OBJECT ControlModule::GetLanguageDescriptor(SOURCE_LANGUAGE sourceLanguage) throw (std::string) {
@@ -125,11 +122,10 @@ MARKUP_OBJECT ControlModule::Parse(CODE_OUTPUT code, LANGUAGE_DESCRIPTOR_OBJECT 
     return markup;
 }
 
-FORMATTED_RESULTS ControlModule::Execute(MARKUP_OBJECT markup, MODULE_ID moduleID, ARG_COUNT argCount, FUNCTION_ARGS functionArgs) {
+void ControlModule::Execute(MARKUP_OBJECT markup, MODULE_ID moduleID, ARG_COUNT argCount, FUNCTION_ARGS functionArgs) {
     MODULE_REF ref = ModuleRetrieval(moduleID);
     MODULE_RESPONSE response = ModuleExecution(ref, markup, argCount, functionArgs);
-    FORMATTED_RESULTS results = FormatOutput(response);
-    return results;
+    FormatOutput(response);
 }
 
 MODULE_REF ControlModule::ModuleRetrieval(MODULE_ID moduleID) {
@@ -141,20 +137,24 @@ MODULE_RESPONSE ControlModule::ModuleExecution(MODULE_REF moduleRef, MARKUP_OBJE
     MODULE_RESPONSE response = NULL;
 
     try {
-        /*response = */moduleRef->Execute(markup, functionArgs, argCount);
+        response = moduleRef->Execute(markup, functionArgs, argCount);
         // attempt to execute the module
     } catch (...) {
         cout << "An error occurred when executing module!\n";
-        // an error occurred, put it in the response object
+        response = new CASP_Return();
+        response->Errors()->Add("Module Execution", new GenericLeaf<string>("\"An error occurrend while trying to execute the module!\""));
     }
 
     return response;
 }
 
-FORMATTED_RESULTS ControlModule::FormatOutput(MODULE_RESPONSE moduleResponse) {
-    FORMATTED_RESULTS results = NULL;
+void ControlModule::FormatOutput(MODULE_RESPONSE moduleResponse) {
 
-    // do some conversion from moduleResponse to formattedResults
+    if (moduleResponse == NULL) 
+        moduleResponse = new CASP_Return();
+        
+    cout << "CASP_RETURN_DATA_START\n";
+    moduleResponse->Print();
+    cout << "\nCASP_RETURN_DATA_END\n";
 
-    return results;
 }
