@@ -68,6 +68,8 @@ namespace CASP_Standalone_Implementation.Src
         Socket BottomSocket;
         Socket LeftSocket;
         Socket RightSocket;
+
+        public bool MouseOver = false;
         bool renderingSockets = false;
         public BlockType type;
         public FlowBlock parent = null;

@@ -58,9 +58,14 @@ Outline* OutlineModule::GetRootOutline(vector<Markup*> parseTrees) {
 
 Outline* OutlineModule::GetFunctionOutline(Markup* functionTree) {
     string functionTitle = functionTree->FindFirstChildById("function-identifier")->GetData();
+    Markup* declarationList = functionTree->FindFirstChildById("function-parameters")->FindFirstChildById("declaration-list");
+    string startText = functionTitle;
+    if (declarationList != NULL) {
+        startText += ": " + declarationList->GetData();
+    }
 
     Outline* outline = new Outline();
-    Node* currentNode = outline->AppendBlock(Start, functionTitle, NULL);
+    Node* currentNode = outline->AppendBlock(Start, startText, NULL);
 
     Markup* block = functionTree->FindFirstById("block");
     currentNode = processBlock(block, outline, currentNode);

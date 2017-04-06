@@ -12,7 +12,7 @@ namespace CASP_Standalone_Implementation.Forms
     public partial class CASP_OutlineForm : CASP_OutputForm // Form
     {
         Pen blockPen = Pens.Gray;
-        
+
         public CASP_OutlineForm()
         {
             InitializeComponent();
@@ -305,7 +305,7 @@ namespace CASP_Standalone_Implementation.Forms
         private void PaintFlowblockEnd(object sender, PaintEventArgs e)
         {
             int left, right, top, bottom, centerX, centerY;
-            ReadFlowblockData(sender, out left, out right, out top, out bottom, out centerX, out centerY);
+            FlowBlock flowblock = ReadFlowblockData(sender, out left, out right, out top, out bottom, out centerX, out centerY);
 
             Graphics g = e.Graphics;
             g.DrawArc(blockPen, new Rectangle(left - 5, top, 10, bottom - top), 90, 180);
@@ -317,7 +317,7 @@ namespace CASP_Standalone_Implementation.Forms
         private void PaintFlowblockProcess(object sender, PaintEventArgs e)
         {
             int left, right, top, bottom, centerX, centerY;
-            ReadFlowblockData(sender, out left, out right, out top, out bottom, out centerX, out centerY);
+            FlowBlock flowblock = ReadFlowblockData(sender, out left, out right, out top, out bottom, out centerX, out centerY);
 
             Graphics g = e.Graphics;
             g.DrawLine(blockPen, left, top, right, top);
@@ -329,7 +329,7 @@ namespace CASP_Standalone_Implementation.Forms
         private void PaintFlowblockDecision(object sender, PaintEventArgs e)
         {
             int left, right, top, bottom, centerX, centerY;
-            ReadFlowblockData(sender, out left, out right, out top, out bottom, out centerX, out centerY);
+            FlowBlock flowblock = ReadFlowblockData(sender, out left, out right, out top, out bottom, out centerX, out centerY);
 
             Graphics g = e.Graphics;
             g.DrawLine(blockPen, centerX, top - 8, right + 8, centerY);
@@ -341,7 +341,7 @@ namespace CASP_Standalone_Implementation.Forms
         private void PaintFlowblockMethod(object sender, PaintEventArgs e)
         {
             int left, right, top, bottom, centerX, centerY;
-            ReadFlowblockData(sender, out left, out right, out top, out bottom, out centerX, out centerY);
+            FlowBlock flowblock = ReadFlowblockData(sender, out left, out right, out top, out bottom, out centerX, out centerY);
 
             Graphics g = e.Graphics;
             g.DrawLine(blockPen, left - 5, top, right + 5, top);
@@ -355,7 +355,7 @@ namespace CASP_Standalone_Implementation.Forms
         private void PaintFlowblockLoop(object sender, PaintEventArgs e)
         {
             int left, right, top, bottom, centerX, centerY;
-            ReadFlowblockData(sender, out left, out right, out top, out bottom, out centerX, out centerY);
+            FlowBlock flowblock = ReadFlowblockData(sender, out left, out right, out top, out bottom, out centerX, out centerY);
 
             Graphics g = e.Graphics;
             g.DrawLine(blockPen, left + 5, top, right - 5, top);
@@ -369,7 +369,7 @@ namespace CASP_Standalone_Implementation.Forms
         private void PaintFlowblockSink(object sender, PaintEventArgs e)
         {
             int left, right, top, bottom, centerX, centerY;
-            ReadFlowblockData(sender, out left, out right, out top, out bottom, out centerX, out centerY);
+            FlowBlock flowblock = ReadFlowblockData(sender, out left, out right, out top, out bottom, out centerX, out centerY);
 
             Graphics g = e.Graphics;
             g.DrawEllipse(blockPen, new Rectangle(left, top, right - left, bottom - top));
@@ -393,14 +393,16 @@ namespace CASP_Standalone_Implementation.Forms
             flowblock.Width = width + 40;
             flowblock.Height = height + 40;
 
+            flowblock.Cursor = Cursors.Hand;
+
             //flowblock.BorderStyle = BorderStyle.Fixed3D;
 
             return flowblock;
         }
 
-        private void ReadFlowblockData(object sender, out int left, out int right, out int top, out int bottom, out int centerX, out int centerY)
+        private FlowBlock ReadFlowblockData(object sender, out int left, out int right, out int top, out int bottom, out int centerX, out int centerY)
         {
-            Control flowblock = sender as Control;
+            FlowBlock flowblock = sender as FlowBlock;
 
             int width = flowblock.Width;
             int height = flowblock.Height;
@@ -411,6 +413,8 @@ namespace CASP_Standalone_Implementation.Forms
             bottom = height - 10 - 2;
             centerX = left + (right - left) / 2;
             centerY = top + (bottom - top) / 2;
+
+            return flowblock;
         }
     }
 }

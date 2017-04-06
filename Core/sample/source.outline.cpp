@@ -27,7 +27,7 @@ int outline_example(int a, bool b) {
     
 }
 
-int display(void a) {
+int display() {
 
     do_something_with_input(a);
 
