@@ -62,7 +62,7 @@ class LanguageDescriptorObject
         void ParseReservedWords(string);
 
         unordered_map<string, string> terminals;
-        vector<string> reservedWords;
+        unordered_map<string, string> reservedWords;
         vector<Production*> productions;
         FSM<char> stateMachine;
 };
