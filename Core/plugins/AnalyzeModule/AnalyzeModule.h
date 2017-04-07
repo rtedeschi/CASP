@@ -18,7 +18,7 @@ class AnalyzeModule : public CASP_Plugin {
     public:
         AnalyzeModule();
 
-        virtual CASP_Return* Execute(Markup*, LanguageDescriptorObject*, string*, int);
+        virtual CASP_Return* Execute(Markup*, LanguageDescriptorObject*, vector<arg>);
 
 };
 

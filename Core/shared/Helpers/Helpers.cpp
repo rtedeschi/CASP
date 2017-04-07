@@ -25,8 +25,8 @@ namespace Helpers {
         return filetext;
     }
 
-    list<string> ParseArrayArgument(string tag, string* args, int argCt) {
-        list<string> ls;
+    vector<string> ParseArrayArgument(string tag, string* args, int argCt) {
+        vector<string> ls;
 
         for (int i = 0; i < argCt; i++) {
             if (args[i].find("/" + tag + "=") == 0) {

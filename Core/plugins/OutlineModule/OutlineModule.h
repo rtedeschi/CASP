@@ -25,7 +25,7 @@ class Edge;
 class OutlineModule : public CASP_Plugin {
     public:
         OutlineModule();
-        virtual CASP_Return* Execute(Markup*, LanguageDescriptorObject*, string*, int);
+        virtual CASP_Return* Execute(Markup*, LanguageDescriptorObject*, vector<arg>);
 
     private:
         vector<Outline*> GetAllOutlines(Markup*);

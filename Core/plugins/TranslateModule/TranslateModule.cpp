@@ -4,7 +4,7 @@ static string _TranslateModule = RegisterPlugin("Translate", new TranslateModule
 
 TranslateModule::TranslateModule() {}
 
-CASP_Return* TranslateModule::Execute(Markup* markup, LanguageDescriptorObject* source_ldo, string* fnArgs, int fnArgCount) {
+CASP_Return* TranslateModule::Execute(Markup* markup, LanguageDescriptorObject* source_ldo, vector<arg> fnArgs) {
 
     /*
         This module hasn't implemented any Function Args yet!

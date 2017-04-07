@@ -18,7 +18,7 @@ class PrintModule : public CASP_Plugin {
     public:
         PrintModule();
 
-        virtual CASP_Return* Execute(Markup*, LanguageDescriptorObject*, string*, int);
+        virtual CASP_Return* Execute(Markup*, LanguageDescriptorObject*, vector<arg>);
 
 };
 

@@ -6,7 +6,7 @@ string EntryTypes[] = { "Start", "MethodCall", "Process", "Loop", "Decision", "E
 
 OutlineModule::OutlineModule() {}
 
-CASP_Return* OutlineModule::Execute(Markup* markup, LanguageDescriptorObject* source_ldo, string* fnArgs, int fnArgCount) {
+CASP_Return* OutlineModule::Execute(Markup* markup, LanguageDescriptorObject* source_ldo, vector<arg> fnArgs) {
 
     /*
         This module hasn't implemented any Function Args yet!

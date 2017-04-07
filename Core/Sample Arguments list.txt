@@ -2,10 +2,10 @@ Outline:
 casp /sourcelang="c++" /moduleid="outline" /codef="sample/source.outline.cpp"
 
 Translate:
-casp /sourcelang="c++" /moduleid="translate" /args="/targetlang=\"java\"" /codef="sample/source.translate.cpp"
+casp /sourcelang="c++" /moduleid="translate" /targetlang="java" /codef="sample/source.translate.cpp"
 
 Analyze:
 casp /sourcelang="c++" /moduleid="analyze" /codef="sample/source.analyze.cpp"
 
 Lint
-casp /sourcelang="c++" /moduleid="lint" /args="/linter=\"java\"" /codef="sample/source.lint.cpp"
+casp /sourcelang="c++" /moduleid="lint" /linter="c++" /codef="sample/source.lint.cpp"

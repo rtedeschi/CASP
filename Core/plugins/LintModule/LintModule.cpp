@@ -4,7 +4,7 @@ static string _LintModule = RegisterPlugin("Lint", new LintModule());
 
 LintModule::LintModule() {}
 
-CASP_Return* LintModule::Execute(Markup* markup, LanguageDescriptorObject* source_ldo, string* fnArgs, int fnArgCount) {
+CASP_Return* LintModule::Execute(Markup* markup, LanguageDescriptorObject* source_ldo, vector<arg> fnArgs) {
 
     /*
         This module hasn't implemented any Function Args yet!

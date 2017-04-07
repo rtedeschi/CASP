@@ -50,7 +50,7 @@ namespace CASP_Standalone_Implementation
                 string srclang = ConsoleWrapper.GetArgument(ConsoleWrapper.SourceLanguage, InputLanguageCombo.SelectedItem.ToString());
                 string code = ConsoleWrapper.GetArgument(ConsoleWrapper.CodeFile, TempFilename);
                 //string code = ConsoleWrapper.GetArgument(ConsoleWrapper.CodeSnippet, InputTextbox.Text);
-                List<string> requestData = customArgs.Select(kvp => ConsoleWrapper.GetFnArgument(kvp.Key, kvp.Value)).ToList();
+                List<string> requestData = customArgs.Select(kvp => ConsoleWrapper.GetArgument(kvp.Key, kvp.Value)).ToList();
                 requestData.Insert(0, code);
                 requestData.Insert(0, srclang);
                 requestData.Insert(0, module);

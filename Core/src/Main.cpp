@@ -13,15 +13,15 @@
 #include <list>
 
 #define OTHER 0
-#define FN_ARG 1
-#define MODULE 2
-#define LANGUAGE 3
-#define CODE 4
-#define CODE_F 5
-int SIZES[] { 0, 6, 10, 12, 6, 7 };
+#define MODULE 1
+#define LANGUAGE 2
+#define CODE 3
+#define CODE_F 4
+int SIZES[] { 0, 10, 12, 6, 7 };
 
 int paramType(string);
 string parseParam(string, int);
+bool stripArgData(string, string*, string*);
 string unescapeCharacters(string);
 
 int main(int argCount, char** argArray)
@@ -29,22 +29,16 @@ int main(int argCount, char** argArray)
     cout << "Code Analyzer Software Package (CASP)" << endl;
     cout << "Build Date: " << TIMESTAMP << endl;
 
-    list<string> fnArgs;
-    list<string> codeSource;
-    string* codeArray = NULL;
-    string* fnArgsArray = NULL;
+    vector<arg> fnArgs;
+    vector<string> codeSource;
     string sourceLanguage;
     string moduleID;
 
     for (int i = 1; i < argCount; i++) 
     {
-        string arg(argArray[i]);
         int type = paramType(argArray[i]);
         string value = parseParam(argArray[i], type);
         switch (type) {
-            case FN_ARG:
-                fnArgs.push_back(value);
-                break;
             case MODULE:
                 moduleID = value;
                 break;
@@ -57,15 +51,16 @@ int main(int argCount, char** argArray)
                 codeSource.push_back(value);
                 break;
             default:
-                cout << "\nIgnoring unexpected parameter '" << value << "'";
+                string t, v;
+                if (stripArgData(argArray[i], &t, &v)) {
+                    arg a(t, v);
+                    fnArgs.push_back(a);
+                }
         }
     }
 
-    Helpers::listToArray(codeSource, &codeArray);
-    Helpers::listToArray(fnArgs, &fnArgsArray);
-
     ControlModule control = ControlModule();
-    control.Run(sourceLanguage, moduleID, codeSource.size(), codeArray, fnArgs.size(), fnArgsArray);
+    control.Run(sourceLanguage, moduleID, codeSource, fnArgs);
 
     cout << "CASP - Operation Complete";
 
@@ -78,8 +73,6 @@ int paramType(string input) {
         type = LANGUAGE;
     else if (input.find("/moduleid=") == 0)
         type = MODULE;
-    else if (input.find("/args=") == 0)
-        type = FN_ARG;
     else if (input.find("/code=") == 0)
         type = CODE;
     else if (input.find("/codef=") == 0)
@@ -87,35 +80,30 @@ int paramType(string input) {
     return type;
 }
 
+bool stripArgData(string input, string* id, string* value) {
+    int slash = input.find("/");
+    int eq = input.find("=");
+
+    if (slash != 0) {
+        *id = "";
+        *value = "";
+        return false;
+    }
+
+    if (eq == -1) {
+        *id = input.substr(1, input.size());
+        *value = "";
+        return true;
+    }
+
+    *id = input.substr(1, eq - 1);
+    *value = input.substr(eq + 1, input.size());
+    return true;
+}
+
 string parseParam(string input, int type) 
 {
     int size = SIZES[type];
     string out = input.substr(size, input.size() - size);
-    if (type == FN_ARG)
-        out.assign(unescapeCharacters(out));
-    return out;
-}
-
-string unescapeCharacters(string in)
-{
-    string out(in);
-    bool escaped = false;
-    for (int i = 0; i < out.size(); i++) 
-    {
-        if (out[i] == '\"')
-        {
-            if (!escaped)
-                out.erase(i--, 1);
-            escaped = false;
-        }
-        else if (out[i] == '\\')
-        {
-            if (!escaped)
-                out.erase(i--, 1);
-            escaped = !escaped;
-        }
-        else
-            escaped = false;
-    }
     return out;
 }
