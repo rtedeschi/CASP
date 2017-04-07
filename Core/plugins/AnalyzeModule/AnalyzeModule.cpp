@@ -4,7 +4,7 @@ static string _AnalyzeModule = RegisterPlugin("Analyze", new AnalyzeModule());
 
 AnalyzeModule::AnalyzeModule() {}
 
-CASP_Return* AnalyzeModule::Execute(Markup* markup, string* fnArgs, int fnArgCount) {
+CASP_Return* AnalyzeModule::Execute(Markup* markup, LanguageDescriptorObject* source_ldo, string* fnArgs, int fnArgCount) {
 
     /*
         This module hasn't implemented any Function Args yet!

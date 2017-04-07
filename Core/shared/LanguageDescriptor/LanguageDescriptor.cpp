@@ -15,6 +15,25 @@ Token::Token(string id, string value) {
     this->value = value;
 }
 
+string LanguageDescriptorObject::LookupTerminalValue(string terminalID) {
+    return terminals[terminalID];
+};
+
+void LanguageDescriptorObject::ParseTerminalValues(string data) {
+
+    string t = string(data);
+    regex r = regex("T\\([ \t]*(.+)[ \t]*,[ \t]*\"(.*)\"[ \t]*\\)");
+    smatch matches;
+
+    while (regex_search(t, matches, r)) {
+        string terminalID = matches[1].str();
+        string terminalValue = matches[2].str();
+        terminals[terminalID] = terminalValue;
+
+        t = matches.suffix().str();
+    }
+}
+
 void LanguageDescriptorObject::ParseReservedWords(string data) {
 
     string t = string(data);
@@ -172,6 +191,7 @@ void LanguageDescriptorObject::Parse(string file) {
     //
     string data = Helpers::ReadFile(file); // TODO: file data should probably already be passed in?
     string t = data;
+    ParseTerminalValues(data);
     ParseFSM(data);
     ParseReservedWords(data);
     

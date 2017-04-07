@@ -33,7 +33,7 @@ void ControlModule::Run(SOURCE_LANGUAGE sourceLanguage, MODULE_ID moduleID, CODE
 
     }
 
-    Execute(markup, moduleID, argCount, functionArgs);
+    Execute(markup, descriptor, moduleID, argCount, functionArgs);
 }
 
 LANGUAGE_DESCRIPTOR_OBJECT ControlModule::GetLanguageDescriptor(SOURCE_LANGUAGE sourceLanguage) throw (std::string) {
@@ -122,9 +122,9 @@ MARKUP_OBJECT ControlModule::Parse(CODE_OUTPUT code, LANGUAGE_DESCRIPTOR_OBJECT 
     return markup;
 }
 
-void ControlModule::Execute(MARKUP_OBJECT markup, MODULE_ID moduleID, ARG_COUNT argCount, FUNCTION_ARGS functionArgs) {
+void ControlModule::Execute(MARKUP_OBJECT markup, LANGUAGE_DESCRIPTOR_OBJECT ldo, MODULE_ID moduleID, ARG_COUNT argCount, FUNCTION_ARGS functionArgs) {
     MODULE_REF ref = ModuleRetrieval(moduleID);
-    MODULE_RESPONSE response = ModuleExecution(ref, markup, argCount, functionArgs);
+    MODULE_RESPONSE response = ModuleExecution(ref, markup, ldo, argCount, functionArgs);
     FormatOutput(response);
 }
 
@@ -133,11 +133,11 @@ MODULE_REF ControlModule::ModuleRetrieval(MODULE_ID moduleID) {
     return GetModule(moduleID);
 }
 
-MODULE_RESPONSE ControlModule::ModuleExecution(MODULE_REF moduleRef, MARKUP_OBJECT markup, ARG_COUNT argCount, FUNCTION_ARGS functionArgs) {
+MODULE_RESPONSE ControlModule::ModuleExecution(MODULE_REF moduleRef, MARKUP_OBJECT markup, LANGUAGE_DESCRIPTOR_OBJECT ldo, ARG_COUNT argCount, FUNCTION_ARGS functionArgs) {
     MODULE_RESPONSE response = NULL;
 
     try {
-        response = moduleRef->Execute(markup, functionArgs, argCount);
+        response = moduleRef->Execute(markup, ldo, functionArgs, argCount);
         // attempt to execute the module
     } catch (...) {
         cout << "An error occurred when executing module!\n";
