@@ -25,31 +25,41 @@ namespace Helpers {
         return filetext;
     }
 
-    vector<string> ParseArrayArgument(string tag, string* args, int argCt) {
+    string toLower(string str) {
+        string c(str);
+        std::transform(c.begin(), c.end(), c.begin(), ::tolower);
+        return c;
+    }
+    string toUpper(string str) {
+        string c(str);
+        std::transform(c.begin(), c.end(), c.begin(), ::toupper);
+        return c;
+    }
+
+    vector<string> ParseArrayArgument(string tag, vector<arg> args) {
+        tag = toLower(tag);
         vector<string> ls;
 
-        for (int i = 0; i < argCt; i++) {
-            if (args[i].find("/" + tag + "=") == 0) {
-                int size = tag.size() + 2;
-                string out = args[i].substr(size, args[i].size() - size);
-                ls.push_back(out);
-            }
+        for (int i = 0; i < args.size(); i++) {
+            if (args[i].id == tag)
+                ls.push_back(args[i].value);
         }
 
         return ls;
     }
 
-    string ParseArgument(string tag, string* args, int argCt) {
-        string str;
+    string ParseArgument(string tag, vector<arg> args) {
+        tag = toLower(tag);
+        string s = "";
 
-        for (int i = 0; i < argCt; i++) {
-            if (args[i].find("/" + tag + "=") == 0) {
-                int size = tag.size() + 2;
-                str = args[i].substr(size, args[i].size() - size);
+        for (int i = 0; i < args.size(); i++) {
+            if (args[i].id == tag) {
+                s = args[i].value;
+                break;
             }
         }
 
-        return str;
+        return s;
     }
 }
 

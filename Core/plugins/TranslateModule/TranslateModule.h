@@ -20,6 +20,11 @@ class TranslateModule : public CASP_Plugin {
 
         virtual CASP_Return* Execute(Markup*, LanguageDescriptorObject*, vector<arg>);
 
+    private:
+        void ReadLanguageFile(string);
+
+        LanguageDescriptorObject* target_ldo = NULL;
+
 };
 
 #endif

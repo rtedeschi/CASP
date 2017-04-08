@@ -91,12 +91,12 @@ bool stripArgData(string input, string* id, string* value) {
     }
 
     if (eq == -1) {
-        *id = input.substr(1, input.size());
+        *id = Helpers::toLower(input.substr(1, input.size()));
         *value = "";
         return true;
     }
 
-    *id = input.substr(1, eq - 1);
+    *id = Helpers::toLower(input.substr(1, eq - 1));
     *value = input.substr(eq + 1, input.size());
     return true;
 }

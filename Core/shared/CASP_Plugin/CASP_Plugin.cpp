@@ -10,7 +10,7 @@ string RegisterPlugin(string id, CASP_Plugin* plugin) {
 }
 
 CASP_Plugin* GetModule(string id) {
-    std::transform(id.begin(), id.end(), id.begin(), ::tolower);
+    id = Helpers::toLower(id);
     CASP_Plugin* plugin = NULL;
     if (ModuleExists(id)) {
         plugin = plugins[id];

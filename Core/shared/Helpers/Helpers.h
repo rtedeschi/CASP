@@ -12,6 +12,7 @@
 #include <string>
 #include <vector>
 #include <list>
+#include <algorithm>
 
 using namespace std;
 
@@ -27,8 +28,11 @@ struct arg {
 namespace Helpers {
     string ReadFile(string);
 
-    vector<string> ParseArrayArgument(string, string*, int);
-    string ParseArgument(string, string*, int);
+    vector<string> ParseArrayArgument(string, vector<arg>);
+    string ParseArgument(string, vector<arg>);
+
+    string toLower(string);
+    string toUpper(string);
 };
 
 template<class T>
