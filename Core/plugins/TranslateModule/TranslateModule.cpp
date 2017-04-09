@@ -8,12 +8,53 @@ CASP_Return* TranslateModule::Execute(Markup* markup, LanguageDescriptorObject* 
 
     cout << "This is the entry point for the " << _TranslateModule << " Module!\n";
 
+    this->source_ldo = source_ldo;
     string targetLanguage = Helpers::ParseArgument("targetlang", fnArgs);
     ReadLanguageFile(targetLanguage);
+
+    Translate(markup);
 
     return NULL;
 
 }
+
+string Translate(Markup* markup) {
+
+    markup* targetRoot = new Markup("ROOT");
+    string nodeId = markup->GetID();
+
+    vector<Markup*> children = markup->Children();
+    for (int i = 0; i < children.size(); i++) {
+        MatchTargetProd(children[i]);
+    }
+
+}
+
+Markup* MatchTargetProd(Markup* markup) {
+
+    string nodeId = markup->GetID();
+    markup* targetProd = target_ldo->findProdById(nodeId);
+
+    if (targetProd != NULL) {
+        cout << "Production " << nodeId << " was matched\n";
+        return TranslateProd(markup, targetProd);
+    } else {
+        // vector<Markup*> children = markup->Children();
+        // for (int i = 0; i < children.size(); i++) {
+        //     Translate(children[i]);
+        // }
+    }
+}
+
+Markup* TranslateMarkup(Markup* source, Production* target) {
+    // vector<Markup*> targetChildren = markup->Children();
+    // for (int i = 0; i < targetChildren.size(); i++) {
+    //     if (targetChildren[i]->IsLeaf()) {
+            
+    //     }
+    // }
+}
+
 
 void TranslateModule::ReadLanguageFile(string targetLanguage) {
     try {

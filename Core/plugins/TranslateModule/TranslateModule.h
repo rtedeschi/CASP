@@ -22,8 +22,12 @@ class TranslateModule : public CASP_Plugin {
 
     private:
         void ReadLanguageFile(string);
+        string Translate(Markup*);
+        string MatchTargetProd(Markup*);
+        string TranslateMarkup(Markup*, Production*);
 
         LanguageDescriptorObject* target_ldo = NULL;
+        LanguageDescriptorObject* source_ldo = NULL;
 
 };
 
