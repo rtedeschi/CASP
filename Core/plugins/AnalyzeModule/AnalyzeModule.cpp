@@ -13,140 +13,197 @@ CASP_Return* AnalyzeModule::Execute(Markup* markup, LanguageDescriptorObject* so
 
     cout << "This is the entry point for the " << _AnalyzeModule << " Module!\n";
 
+    GetAllAnalyses(markup);
+
     return NULL;
 }
 
-vector<Outline*> AnalyzeModule::GetAllAnalysis(Markup* masterTree) {
-    vector<Outline*> outlines;
+void AnalyzeModule::GetAllAnalyses(Markup* masterTree) {
     vector<Markup*> functions = masterTree->FindAllById("function-definition", true);
     vector<Markup*> sls = masterTree->FindAllChildrenById("statement-list");
 
     if (sls.size() > 0) {
-        outlines.push_back(GetRootOutline(sls));
+        GetRootAnalysis(sls);
     }
     if (functions.size() > 0) {
-        for (int i = 0; i < functions.size(); i++) {
-            outlines.push_back(GetFunctionOutline(functions[i]));
+        int i;
+        for (i = 0; i < functions.size(); i++) {
+            string fnName = functions[i]->FindFirstChildById("function-identifier")->GetData();
+            markupTable[fnName] = functions[i];
+        }
+        for (i = 0; i < functions.size(); i++) {
+            GetFunctionAnalysis(functions[i]);
         }
     }
 
-    return outlines;
 }
 
-Outline* AnalyzeModule::GetRootAnalyze(vector<Markup*> parseTrees) {
-
-    string functionTitle = "ROOT";
+Analysis* AnalyzeModule::GetRootAnalysis(vector<Markup*> parseTrees) {
 
     AnalysisTree* analysis = new AnalysisTree();
-    Node* currentNode = analysis->AppendBlock(Start, functionTitle, NULL);
 
     for (int i = 0; i < parseTrees.size(); i++) {
-        currentNode = processBlock(parseTrees[i], analysis, currentNode);
+        processBlock(parseTrees[i], analysis);
     }
 
-    analysis->AppendBlock(End, "End " + functionTitle, currentNode);
-    return analysis;
+    return functionTable["ROOT"] = analysis->GetAnalysis();
 }
 
-AnalysisTree* AnalyzeModule::GetFunctionAnalyze(Markup* functionTree) {
+Analysis* AnalyzeModule::GetFunctionAnalysis(Markup* functionTree) {
+
+    if (functionTree == NULL)
+        return NULL;
+
     string functionTitle = functionTree->FindFirstChildById("function-identifier")->GetData();
 
-    cout << "Analyze Starting for " << functionTitle << endl;
-
-    AnalysisTree* analysis = new AnalysisTree();
-    Node* currentNode = analysis->AppendBlock(Start, functionTitle, NULL);
-
-    Markup* block = functionTree->FindFirstById("block");
-    currentNode = processBlock(block, analysis, currentNode);
-
-    analysis->AppendBlock(End, "End " + functionTitle, currentNode);
-
-    cout << "Analyze Complete for " << functionTitle << endl;
-
-    return analysis;
-}
-
-Node* AnalyzeModule::stripMethodCall(Markup* parseTree, AnalysisTree* analysis, Node* startNode) {
-    string blockData = parseTree->FindFirstChildById("function-identifier")->GetData();
-    Markup* methodArgsTree = parseTree->FindFirstChildById("arg-list");
-
-    if (methodArgsTree != NULL) {
-        blockData = blockData + ": " + methodArgsTree->GetData();
+    if (functionTable[functionTitle] == NULL) {
+        AnalysisTree* analysis = new AnalysisTree();
+        Markup* block = functionTree->FindFirstById("block");
+        processBlock(block, analysis);
+        functionTable[functionTitle] = analysis->GetAnalysis();
     }
 
-    return analysis->AppendBlock(MethodCall, blockData, startNode);
+    return functionTable[functionTitle];
 }
-Node* AnalyzeModule::stripDecision(Markup* parseTree, AnalysisTree* analysis, Node* startNode) {
 
-    Node* currentNode = startNode;
-    // todo
-    return currentNode;
+void AnalyzeModule::analyzeMethodCall(Markup* parseTree, AnalysisTree* analysis) {
+    string functionTitle = parseTree->FindFirstChildById("function-identifier")->GetData();
+
+    AnalysisTree* node = new AnalysisTree();
+    node->SetAnalysis(GetFunctionAnalysis(markupTable[functionTitle]));
+
+    analysis->AddChild(node);
 }
-Node* AnalyzeModule::stripLoop(Markup* parseTree, AnalysisTree* analysis, Node* startNode) {
+void AnalyzeModule::analyzeDecision(Markup* parseTree, AnalysisTree* analysis) {
+
+    AnalysisTree* node = new AnalysisTree();
+    analysis->AddChild(node);
+
+    // todo
+}
+void AnalyzeModule::analyzeProcess(Markup* parseTree, AnalysisTree* analysis) {
+
+    AnalysisNode* node = new AnalysisNode();
+    node->SetToConstant();
+
+    AnalysisTree* tree = new AnalysisTree();
+    tree->AddFactor(node);
+
+    analysis->AddChild(tree);
+
+}
+void AnalyzeModule::analyzeLoop(Markup* parseTree, AnalysisTree* analysis) {
 
     Markup* init = parseTree->FindFirstChildById("for-init");
     Markup* condition = parseTree->FindFirstChildById("for-condition");
     Markup* increment = parseTree->FindFirstChildById("for-increment");
     Markup* body = parseTree->FindFirstChildById("for-body");
     Markup* proc = NULL;
-    string blockData = "Loop";
+
+    AnalysisTree* tree = new AnalysisTree();
+    analysis->AddChild(tree);
 
     if (init != NULL || condition != NULL || increment != NULL) {
-        bool prev = false;
-        blockData += ": ";
-        if (init != NULL) {
-            blockData += init->GetData();
-            prev = true;
-        }
-        if (condition != NULL) {
-            if (prev)
-                blockData += ", ";
-            blockData += condition->GetData();
-            prev = true;
-        }
-        if (increment != NULL) {
-            if (prev)
-                blockData += ", ";
-            blockData += increment->GetData();
-        }
+        // Analyze loop here
+        // if (init != NULL) {
+        //     blockData += init->GetData();
+        // }
+        // if (condition != NULL) {
+        //     blockData += condition->GetData();
+        // }
+        // if (increment != NULL) {
+        //     blockData += increment->GetData();
+        // }
     }
-
-    Node* currentNode = startNode = 
-        analysis->AppendBlock(Loop, blockData, startNode);
 
     if ((proc = body->FindFirstChildById("block")) != NULL) {
-        currentNode = processBlock(proc, analysis, startNode);
-        currentNode->AddEdgeTo(startNode);
+        processBlock(proc, tree);
     } else if ((proc = body->FindFirstChildById("statement")) != NULL) {
-        currentNode = processStatement(proc, analysis, startNode);
-        currentNode->AddEdgeTo(startNode);
+        processStatement(proc, tree);
     }
 
-    return startNode;
 }
 
-Node* AnalyzeModule::processStatement(Markup* statement, AnalysisTree* analysis, Node* startNode) {
-    Node* currentNode = NULL;
+void AnalyzeModule::processStatement(Markup* statement, AnalysisTree* analysis) {
+
     Markup* s = statement->ChildAt(0);
     string id = s->GetID();
-    cout << "s" << endl;
 
     if (id == "for-loop") {
-        currentNode = stripLoop(s, analysis, startNode);
+        analyzeLoop(s, analysis);
     } else if (id == "decision") {
-        currentNode = stripDecision(s, analysis, startNode);
+        analyzeDecision(s, analysis);
     } else if (id == "block") {
-        currentNode = processBlock(s, analysis, startNode);
+        processBlock(s, analysis);
     } else {
         s = s->ChildAt(0);
         id = s->GetID();
         if (id == "method-invokation") {
-            currentNode = stripMethodCall(s, analysis, startNode);
+            analyzeMethodCall(s, analysis);
         } else {
-            currentNode = stripProcess(s, analysis, startNode);
+            analyzeProcess(s, analysis);
         }
     }
-    cout << "e" << endl;
 
-    return currentNode;
+}
+void AnalyzeModule::processBlock(Markup* parseTree, AnalysisTree* analysis) {
+    Markup* sl = parseTree->FindFirstById("statement-list");
+
+    if (sl != NULL) {
+        vector<Markup*> statements = sl->Children();
+
+        for (int i = 0; i < statements.size(); i++) {
+            processStatement(statements[i], analysis);
+        }
+    }
+}
+
+AnalysisTree::AnalysisTree() {
+    analysis = new Analysis();
+}
+
+void AnalysisTree::AddChild(AnalysisTree* tree) {
+    children.push_back(tree);
+}
+
+void AnalysisTree::SetAnalysis(Analysis* analysis) {
+    this->analysis = analysis;
+}
+
+Analysis* AnalysisTree::GetAnalysis() {
+    // todo - this should condense the tree into a single analysis
+    return analysis;
+}
+
+void AnalysisTree::AddFactor(AnalysisNode* node) {
+    analysis->AddFactor(node);
+}
+
+Analysis::Analysis() {}
+
+void Analysis::AddFactor(AnalysisNode* node) {
+    children.push_back(node);
+}
+
+string Analysis::ToString() {
+    // todo
+    return "";
+}
+
+AnalysisNode::AnalysisNode() {}
+
+void AnalysisNode::SetToConstant() {
+    this->base = 1;
+    this->exponent = 1;
+    this->type = Constant;
+}
+void AnalysisNode::SetToExponential(int exponent){
+    this->base = 1;
+    this->exponent = exponent;
+    this->type = Exponential;
+}
+void AnalysisNode::SetToLogarithmic(int base, int exponent){
+    this->base = base;
+    this->exponent = exponent;
+    this->type = Logarithmic;
 }

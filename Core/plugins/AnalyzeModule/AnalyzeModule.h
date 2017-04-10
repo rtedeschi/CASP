@@ -15,29 +15,51 @@
 
 using namespace std;
 
-enum NodeType { Constant, Power, Logarithm };
+enum NodeType { Constant, Exponential, Logarithmic };
 
 class AnalysisNode {
     public:
-        AnalysisNode(int, NodeType);
+        AnalysisNode();
 
+        void SetToConstant();
+        void SetToExponential(int exponent);
+        void SetToLogarithmic(int base, int exponent);
+
+        int exponent = 1;
         int base = 1;
         NodeType type = Constant;
 
     private:
-        Markup* markup = NULL;
+
+};
+
+class Analysis {
+
+    public:
+        Analysis();
+        void AddFactor(AnalysisNode*);
+        string ToString();
+
+    private:
+        vector<AnalysisNode*> children;
+
 
 };
 
 class AnalysisTree {
     public:
-        AnalysisTree(Markup*);
+        AnalysisTree();
+
+        void AddChild(AnalysisTree*);
+        void AddFactor(AnalysisNode*);
+        void SetAnalysis(Analysis*);
+
+        Analysis* GetAnalysis();
 
     private:
     
         vector<AnalysisTree*> children;
-        vector<AnalysisNode*> analysis;
-
+        Analysis* analysis = NULL;
 
 };
 
@@ -48,16 +70,19 @@ class AnalyzeModule : public CASP_Plugin {
         virtual CASP_Return* Execute(Markup*, LanguageDescriptorObject*, vector<arg>);
 
     private:
-        vector<AnalysisTree*> GetAllAnalysis(Markup*);
-        AnalysisTree* GetRootAnalyze(vector<Markup*>);
-        AnalysisTree* GetFunctionAnalyze(Markup*);
+        void GetAllAnalyses(Markup*);
+        Analysis* GetRootAnalysis(vector<Markup*>);
+        Analysis* GetFunctionAnalysis(Markup*);
 
-        AnalysisTree* analyzeProcess(Markup*, AnalysisTree*);
-        AnalysisTree* analyzeMethodCall(Markup*, AnalysisTree*);
-        AnalysisTree* analyzeDecision(Markup*, AnalysisTree*);
-        AnalysisTree* analyzeLoop(Markup*, AnalysisTree*);
-        AnalysisTree* processStatement(Markup*, AnalysisTree*);
-        AnalysisTree* processBlock(Markup*, AnalysisTree*); 
+        void analyzeProcess(Markup*, AnalysisTree*);
+        void analyzeMethodCall(Markup*, AnalysisTree*);
+        void analyzeDecision(Markup*, AnalysisTree*);
+        void analyzeLoop(Markup*, AnalysisTree*);
+        void processStatement(Markup*, AnalysisTree*);
+        void processBlock(Markup*, AnalysisTree*); 
+
+        unordered_map<string, Analysis*> functionTable;
+        unordered_map<string, Markup*> markupTable;
 
 };
 
