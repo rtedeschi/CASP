@@ -35,12 +35,6 @@ namespace CASP_Standalone_Implementation.Src
             return "/" + type + "=\"" + data + "\"";
         }
 
-        public static string GetFnArgument(string type, string data)
-        {
-            var str = "/" + type + "=\\\"" + data + "\\\"";
-            return GetArgument(FunctionArgument, str);
-        }
-
         public static async Task<string> Execute(string request)
         {
             return await Task.Run(() =>

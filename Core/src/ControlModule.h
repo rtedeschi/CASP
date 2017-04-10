@@ -14,14 +14,12 @@
  */
 #define SOURCE_LANGUAGE string
 #define MODULE_ID string
-#define CODE_COUNT int
-#define CODE_INPUT string*
-#define ARG_COUNT int
-#define FUNCTION_ARGS string*
+#define CODE_INPUT vector<string>
+#define FUNCTION_ARGS vector<arg>
 #define MODULE_RESPONSE CASP_Return*
 #define LANGUAGE_DESCRIPTOR_OBJECT LanguageDescriptorObject*
 #define MARKUP_OBJECT Markup*
-#define CODE_OUTPUT string*
+#define CODE_OUTPUT vector<string>
 #define MODULE_REF CASP_Plugin*
 
 #include "../shared/CASP_Plugin/CASP_Plugin.h"
@@ -36,7 +34,7 @@ class ControlModule {
     public:
         ControlModule();
         ~ControlModule();
-        void Run(SOURCE_LANGUAGE, MODULE_ID, CODE_COUNT, CODE_INPUT, ARG_COUNT, FUNCTION_ARGS);
+        void Run(SOURCE_LANGUAGE, MODULE_ID, CODE_INPUT, FUNCTION_ARGS);
 
     private:
         LANGUAGE_DESCRIPTOR_OBJECT GetLanguageDescriptor(SOURCE_LANGUAGE) throw (std::string);
@@ -44,9 +42,9 @@ class ControlModule {
         LANGUAGE_DESCRIPTOR_OBJECT ReadLanguageFile(SOURCE_LANGUAGE) throw (std::string);
         CODE_OUTPUT CoalesceCode(CODE_INPUT); // is this necessary?..
         MARKUP_OBJECT Parse(CODE_OUTPUT, LANGUAGE_DESCRIPTOR_OBJECT);
-        void Execute(MARKUP_OBJECT, MODULE_ID, ARG_COUNT, FUNCTION_ARGS);
+        void Execute(MARKUP_OBJECT, LANGUAGE_DESCRIPTOR_OBJECT, MODULE_ID, FUNCTION_ARGS);
         MODULE_REF ModuleRetrieval(MODULE_ID);
-        MODULE_RESPONSE ModuleExecution(MODULE_REF, MARKUP_OBJECT, ARG_COUNT, FUNCTION_ARGS);
+        MODULE_RESPONSE ModuleExecution(MODULE_REF, MARKUP_OBJECT, LANGUAGE_DESCRIPTOR_OBJECT, FUNCTION_ARGS);
         void FormatOutput(MODULE_RESPONSE);
 };
 

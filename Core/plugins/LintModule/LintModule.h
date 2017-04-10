@@ -18,7 +18,7 @@ class LintModule : public CASP_Plugin {
     public:
         LintModule();
 
-        virtual CASP_Return* Execute(Markup*, string*, int);
+        virtual CASP_Return* Execute(Markup*, LanguageDescriptorObject*, vector<arg>);
 
 };
 

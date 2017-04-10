@@ -18,7 +18,12 @@ class TranslateModule : public CASP_Plugin {
     public:
         TranslateModule();
 
-        virtual CASP_Return* Execute(Markup*, string*, int);
+        virtual CASP_Return* Execute(Markup*, LanguageDescriptorObject*, vector<arg>);
+
+    private:
+        void ReadLanguageFile(string);
+
+        LanguageDescriptorObject* target_ldo = NULL;
 
 };
 

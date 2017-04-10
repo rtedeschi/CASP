@@ -12,20 +12,27 @@
 #include <string>
 #include <vector>
 #include <list>
+#include <algorithm>
 
 using namespace std;
+
+struct arg {
+    arg(string id, string value) {
+        this->id = id;
+        this->value = value;
+    };
+    string id;
+    string value;
+};
 
 namespace Helpers {
     string ReadFile(string);
 
-    list<string> ParseArrayArgument(string, string*, int);
-    string ParseArgument(string, string*, int);
+    vector<string> ParseArrayArgument(string, vector<arg>);
+    string ParseArgument(string, vector<arg>);
 
-    template<typename T> 
-    void listToArray(list<T> list, T** out) {
-        (*out) = (T*)calloc(list.size(), sizeof(T));
-        copy(list.begin(), list.end(), *out);
-    }
+    string toLower(string);
+    string toUpper(string);
 };
 
 template<class T>

@@ -15,23 +15,49 @@
 
 using namespace std;
 
+enum NodeType { Constant, Power, Logarithm };
+
+class AnalysisNode {
+    public:
+        AnalysisNode(int, NodeType);
+
+        int base = 1;
+        NodeType type = Constant;
+
+    private:
+        Markup* markup = NULL;
+
+};
+
+class AnalysisTree {
+    public:
+        AnalysisTree(Markup*);
+
+    private:
+    
+        vector<AnalysisTree*> children;
+        vector<AnalysisNode*> analysis;
+
+
+};
+
 class AnalyzeModule : public CASP_Plugin {
     public:
         AnalyzeModule();
 
-        virtual CASP_Return* Execute(Markup*, string*, int);
+        virtual CASP_Return* Execute(Markup*, LanguageDescriptorObject*, vector<arg>);
 
     private:
-        vector<Analyze*> GetAllAnalysis(Markup*);
-        Analyze* GetRootAnalyze(vector<Markup*>);
-        Analyze* GetFunctionAnalyze(Markup*);
+        vector<AnalysisTree*> GetAllAnalysis(Markup*);
+        AnalysisTree* GetRootAnalyze(vector<Markup*>);
+        AnalysisTree* GetFunctionAnalyze(Markup*);
 
-        Node* stripProcess(Markup*, Analyze*, Node*);
-        Node* stripMethodCall(Markup*, Analyze*, Node*);
-        Node* stripDecision(Markup*, Analyze*, Node*);
-        Node* stripLoop(Markup*, Analyze*, Node*);
-        Node* processStatement(Markup*, Analyze*, Node*);
-        Node* processBlock(Markup*, Analyze*, Node*); 
+        AnalysisTree* analyzeProcess(Markup*, AnalysisTree*);
+        AnalysisTree* analyzeMethodCall(Markup*, AnalysisTree*);
+        AnalysisTree* analyzeDecision(Markup*, AnalysisTree*);
+        AnalysisTree* analyzeLoop(Markup*, AnalysisTree*);
+        AnalysisTree* processStatement(Markup*, AnalysisTree*);
+        AnalysisTree* processBlock(Markup*, AnalysisTree*); 
 
 };
 

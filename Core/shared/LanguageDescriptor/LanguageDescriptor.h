@@ -13,6 +13,7 @@
 #include <string>
 #include <regex>
 #include <iostream>
+#include <unordered_map>
 #include "../Markup/Markup.h"
 #include "../Helpers/Helpers.h"
 
@@ -53,11 +54,15 @@ class LanguageDescriptorObject
         vector<Production*> GetOrderedProductions(vector<string>);
         vector<Production*> GetProductions();
 
+        string LookupTerminalValue(string);
+
     private:
+        void ParseTerminalValues(string);
         void ParseFSM(string);
         void ParseReservedWords(string);
 
-        vector<string> reservedWords;
+        unordered_map<string, string> terminals;
+        unordered_map<string, string> reservedWords;
         vector<Production*> productions;
         FSM<char> stateMachine;
 };

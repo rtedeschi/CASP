@@ -4,7 +4,7 @@ static string _AnalyzeModule = RegisterPlugin("Analyze", new AnalyzeModule());
 
 AnalyzeModule::AnalyzeModule() {}
 
-CASP_Return* AnalyzeModule::Execute(Markup* markup, string* fnArgs, int fnArgCount) {
+CASP_Return* AnalyzeModule::Execute(Markup* markup, LanguageDescriptorObject* source_ldo, vector<arg> fnArgs) {
 
     /*
         This module hasn't implemented any Function Args yet!
@@ -37,36 +37,36 @@ Outline* AnalyzeModule::GetRootAnalyze(vector<Markup*> parseTrees) {
 
     string functionTitle = "ROOT";
 
-    Analyze* Analyze = new Analyze();
-    Node* currentNode = Analyze->AppendBlock(Start, functionTitle, NULL);
+    AnalysisTree* analysis = new AnalysisTree();
+    Node* currentNode = analysis->AppendBlock(Start, functionTitle, NULL);
 
     for (int i = 0; i < parseTrees.size(); i++) {
-        currentNode = processBlock(parseTrees[i], Analyze, currentNode);
+        currentNode = processBlock(parseTrees[i], analysis, currentNode);
     }
 
-    Analyze->AppendBlock(End, "End " + functionTitle, currentNode);
-    return Analyze;
+    analysis->AppendBlock(End, "End " + functionTitle, currentNode);
+    return analysis;
 }
 
-Analyze* AnalyzeModule::GetFunctionAnalyze(Markup* functionTree) {
+AnalysisTree* AnalyzeModule::GetFunctionAnalyze(Markup* functionTree) {
     string functionTitle = functionTree->FindFirstChildById("function-identifier")->GetData();
 
     cout << "Analyze Starting for " << functionTitle << endl;
 
-    Analyze* Analyze = new Analyze();
-    Node* currentNode = Analyze->AppendBlock(Start, functionTitle, NULL);
+    AnalysisTree* analysis = new AnalysisTree();
+    Node* currentNode = analysis->AppendBlock(Start, functionTitle, NULL);
 
     Markup* block = functionTree->FindFirstById("block");
-    currentNode = processBlock(block, Analyze, currentNode);
+    currentNode = processBlock(block, analysis, currentNode);
 
-    Analyze->AppendBlock(End, "End " + functionTitle, currentNode);
+    analysis->AppendBlock(End, "End " + functionTitle, currentNode);
 
     cout << "Analyze Complete for " << functionTitle << endl;
 
-    return Analyze;
+    return analysis;
 }
 
-Node* AnalyzeModule::stripMethodCall(Markup* parseTree, Analyze* Analyze, Node* startNode) {
+Node* AnalyzeModule::stripMethodCall(Markup* parseTree, AnalysisTree* analysis, Node* startNode) {
     string blockData = parseTree->FindFirstChildById("function-identifier")->GetData();
     Markup* methodArgsTree = parseTree->FindFirstChildById("arg-list");
 
@@ -74,15 +74,15 @@ Node* AnalyzeModule::stripMethodCall(Markup* parseTree, Analyze* Analyze, Node* 
         blockData = blockData + ": " + methodArgsTree->GetData();
     }
 
-    return Analyze->AppendBlock(MethodCall, blockData, startNode);
+    return analysis->AppendBlock(MethodCall, blockData, startNode);
 }
-Node* AnalyzeModule::stripDecision(Markup* parseTree, Analyze* Analyze, Node* startNode) {
+Node* AnalyzeModule::stripDecision(Markup* parseTree, AnalysisTree* analysis, Node* startNode) {
 
     Node* currentNode = startNode;
     // todo
     return currentNode;
 }
-Node* AnalyzeModule::stripLoop(Markup* parseTree, Analyze* Analyze, Node* startNode) {
+Node* AnalyzeModule::stripLoop(Markup* parseTree, AnalysisTree* analysis, Node* startNode) {
 
     Markup* init = parseTree->FindFirstChildById("for-init");
     Markup* condition = parseTree->FindFirstChildById("for-condition");
@@ -112,38 +112,38 @@ Node* AnalyzeModule::stripLoop(Markup* parseTree, Analyze* Analyze, Node* startN
     }
 
     Node* currentNode = startNode = 
-        Analyze->AppendBlock(Loop, blockData, startNode);
+        analysis->AppendBlock(Loop, blockData, startNode);
 
     if ((proc = body->FindFirstChildById("block")) != NULL) {
-        currentNode = processBlock(proc, Analyze, startNode);
+        currentNode = processBlock(proc, analysis, startNode);
         currentNode->AddEdgeTo(startNode);
     } else if ((proc = body->FindFirstChildById("statement")) != NULL) {
-        currentNode = processStatement(proc, Analyze, startNode);
+        currentNode = processStatement(proc, analysis, startNode);
         currentNode->AddEdgeTo(startNode);
     }
 
     return startNode;
 }
 
-Node* AnalyzeModule::processStatement(Markup* statement, Analyze* Analyze, Node* startNode) {
+Node* AnalyzeModule::processStatement(Markup* statement, AnalysisTree* analysis, Node* startNode) {
     Node* currentNode = NULL;
     Markup* s = statement->ChildAt(0);
     string id = s->GetID();
     cout << "s" << endl;
 
     if (id == "for-loop") {
-        currentNode = stripLoop(s, Analyze, startNode);
+        currentNode = stripLoop(s, analysis, startNode);
     } else if (id == "decision") {
-        currentNode = stripDecision(s, Analyze, startNode);
+        currentNode = stripDecision(s, analysis, startNode);
     } else if (id == "block") {
-        currentNode = processBlock(s, Analyze, startNode);
+        currentNode = processBlock(s, analysis, startNode);
     } else {
         s = s->ChildAt(0);
         id = s->GetID();
         if (id == "method-invokation") {
-            currentNode = stripMethodCall(s, Analyze, startNode);
+            currentNode = stripMethodCall(s, analysis, startNode);
         } else {
-            currentNode = stripProcess(s, Analyze, startNode);
+            currentNode = stripProcess(s, analysis, startNode);
         }
     }
     cout << "e" << endl;

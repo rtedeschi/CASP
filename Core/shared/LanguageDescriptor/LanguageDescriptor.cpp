@@ -15,15 +15,36 @@ Token::Token(string id, string value) {
     this->value = value;
 }
 
-void LanguageDescriptorObject::ParseReservedWords(string data) {
+string LanguageDescriptorObject::LookupTerminalValue(string terminalID) {
+    return terminals[terminalID];
+};
+
+void LanguageDescriptorObject::ParseTerminalValues(string data) {
 
     string t = string(data);
-    regex r = regex("ReservedWord\\([ \t]*([^ \t\n]+)[ \t]*\\)");
+    regex r = regex("T\\([ \t]*(.+)[ \t]*,[ \t]*\"(.*)\"[ \t]*\\)");
     smatch matches;
 
     while (regex_search(t, matches, r)) {
-        string word = matches[1].str();
-        reservedWords.push_back(word);
+        string terminalID = matches[1].str();
+        string terminalValue = matches[2].str();
+        terminals[terminalID] = terminalValue;
+
+        t = matches.suffix().str();
+    }
+}
+
+void LanguageDescriptorObject::ParseReservedWords(string data) {
+
+    string t = string(data);
+    regex r = regex("ReservedWord\\([ \t]*(.+)[ \t]*,[ \t]*(.+)[ \t]*\\)");
+    smatch matches;
+
+    while (regex_search(t, matches, r)) {
+        string terminalValue = matches[1].str();
+        string terminalID = matches[2].str();
+        reservedWords[terminalValue] = terminalID;
+        terminals[terminalID] = terminalValue;
 
         t = matches.suffix().str();
     }
@@ -102,12 +123,8 @@ vector<Token> LanguageDescriptorObject::Tokenize(string input) {
                 c[inputVector.size()] = '\0';
                 str = string(c);
 
-                for (int j = 0; j < reservedWords.size(); j++) {
-                    if (reservedWords[j] == str) {
-                        token = "RESERVED";
-                        break;
-                    }
-                }
+                if (reservedWords[str] != "")
+                    token = reservedWords[str];
 
                 // cout << "State machine accepted token '" << token << "' with data '" << str << "'\n";
                 i--;
@@ -172,6 +189,7 @@ void LanguageDescriptorObject::Parse(string file) {
     //
     string data = Helpers::ReadFile(file); // TODO: file data should probably already be passed in?
     string t = data;
+    ParseTerminalValues(data);
     ParseFSM(data);
     ParseReservedWords(data);
     

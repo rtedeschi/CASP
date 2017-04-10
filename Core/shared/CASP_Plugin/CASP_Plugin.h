@@ -10,15 +10,17 @@
 
 #include <algorithm>
 #include <string>
+#include <vector>
 #include <unordered_map>
 #include "../Markup/Markup.h"
 #include "../CASP_Return/CASP_Return.h"
+#include "../LanguageDescriptor/LanguageDescriptor.h"
 
 using namespace std;
 
 class CASP_Plugin {
     public:
-        virtual CASP_Return* Execute(Markup*, string*, int) = 0;
+        virtual CASP_Return* Execute(Markup*, LanguageDescriptorObject*, vector<arg>) = 0;
         // Markup data, function args, function arg count
 };
 
