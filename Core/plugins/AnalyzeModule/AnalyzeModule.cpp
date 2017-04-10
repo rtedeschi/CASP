@@ -69,8 +69,11 @@ Analysis* AnalyzeModule::GetFunctionAnalysis(Markup* functionTree) {
 void AnalyzeModule::analyzeMethodCall(Markup* parseTree, AnalysisTree* analysis) {
     string functionTitle = parseTree->FindFirstChildById("function-identifier")->GetData();
 
+    Analysis* fnAnalysis = GetFunctionAnalysis(markupTable[functionTitle]);
+
+    // todo - Add a warning if the function doesn't exist
     AnalysisTree* node = new AnalysisTree();
-    node->SetAnalysis(GetFunctionAnalysis(markupTable[functionTitle]));
+    node->SetAnalysis(fnAnalysis);
 
     analysis->AddChild(node);
 }

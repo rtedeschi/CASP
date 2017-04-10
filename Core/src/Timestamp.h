@@ -3,5 +3,5 @@
 * is automatically generated with every build
 */
 #ifndef TIMESTAMP
-#define TIMESTAMP "04-09-2017 22:02:54"
+#define TIMESTAMP "04-10-2017 00:00:04"
 #endif
