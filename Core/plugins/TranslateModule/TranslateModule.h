@@ -21,10 +21,18 @@ class TranslateModule : public CASP_Plugin {
         virtual CASP_Return* Execute(Markup*, LanguageDescriptorObject*, vector<arg>);
 
     private:
+
+        string PrettyPrint(vector<Token>);
+        string PrintBlockBody(vector<Token>, int*, int);
+
         void ReadLanguageFile(string);
         string Translate(Markup*);
-        string MatchTargetProd(Markup*);
-        string TranslateMarkup(Markup*, Production*);
+        Markup* MatchTargetProd(Markup*);
+        Markup* TranslateProd(Markup*, Production*);
+
+        Markup* HandleTerminal(Markup*, ProductionSet*);
+        Markup* HandleProduction(Markup*, ProductionSet*);
+        Markup* HandleAlternation(Markup*, ProductionSet*);
 
         LanguageDescriptorObject* target_ldo = NULL;
         LanguageDescriptorObject* source_ldo = NULL;
