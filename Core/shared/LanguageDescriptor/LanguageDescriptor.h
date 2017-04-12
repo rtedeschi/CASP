@@ -29,11 +29,13 @@ class ProductionSet;
 class LanguageDescriptorObject;
 class TokenMatch;
 
-class Token {
+class Token : public Printable {
     public:
         Token(string, string);
         string id;
         string value;
+
+        void Print();
 
     private:
 
@@ -47,14 +49,16 @@ class LanguageDescriptorObject
         ~LanguageDescriptorObject();
 
         vector<Token> Tokenize(string);
+        vector<Token> Tokenize(Markup*);
 
         void Parse(string);
+        
+        string LookupTerminalValue(string);
         Production* findProdById(string);
         int getProdIndex(string);
         vector<Production*> GetOrderedProductions(vector<string>);
         vector<Production*> GetProductions();
 
-        string LookupTerminalValue(string);
 
     private:
         void ParseTerminalValues(string);
@@ -99,11 +103,16 @@ class ProductionSet {
 
         Production* GetProduction();
 
+        ProductionSetType GetType();
+        vector<ProductionSet*> GetChildren();
+        string GetSource();
+        string GetMultiplicity();
+
         // Markup Parser(vector<string>);
 
     private:
-        TokenMatch* MatchTerminal(vector<Token>, int);
         TokenMatch* MatchGroup(vector<Token>, int);
+        TokenMatch* MatchTerminal(vector<Token>, int);
         TokenMatch* MatchAlternation(vector<Token>, int);
         TokenMatch* MatchProduction(vector<Token>, int);
 

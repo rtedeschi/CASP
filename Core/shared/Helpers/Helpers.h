@@ -27,6 +27,7 @@ struct arg {
 
 namespace Helpers {
     string ReadFile(string);
+    string DupStr(string, int);
 
     vector<string> ParseArrayArgument(string, vector<arg>);
     string ParseArgument(string, vector<arg>);

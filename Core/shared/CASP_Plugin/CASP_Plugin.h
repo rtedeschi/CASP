@@ -22,6 +22,8 @@ class CASP_Plugin {
     public:
         virtual CASP_Return* Execute(Markup*, LanguageDescriptorObject*, vector<arg>) = 0;
         // Markup data, function args, function arg count
+
+        CASP_Return* returnData = new CASP_Return();
 };
 
 // extern unordered_map<string, CASP_Plugin*> plugins;

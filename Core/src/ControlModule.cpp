@@ -142,7 +142,7 @@ MODULE_RESPONSE ControlModule::ModuleExecution(MODULE_REF moduleRef, MARKUP_OBJE
     } catch (...) {
         cout << "An error occurred when executing module!\n";
         response = new CASP_Return();
-        response->Errors()->Add("Module Execution", new GenericLeaf<string>("\"An error occurrend while trying to execute the module!\""));
+        response->AddStandardError("An error occurred while trying to execute the module!");
     }
 
     return response;
