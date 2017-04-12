@@ -102,21 +102,27 @@ void AnalyzeModule::analyzeLoop(Markup* parseTree, AnalysisTree* analysis) {
     Markup* increment = parseTree->FindFirstChildById("for-increment");
     Markup* body = parseTree->FindFirstChildById("for-body");
     Markup* proc = NULL;
+    string blockData = "Loop";
 
     AnalysisTree* tree = new AnalysisTree();
     analysis->AddChild(tree);
 
     if (init != NULL || condition != NULL || increment != NULL) {
-        // Analyze loop here
-        // if (init != NULL) {
-        //     blockData += init->GetData();
-        // }
-        // if (condition != NULL) {
-        //     blockData += condition->GetData();
-        // }
-        // if (increment != NULL) {
-        //     blockData += increment->GetData();
-        // }
+        bool prev = false;
+        blockdata += ": ";
+        if (init != NULL){
+            blockData += init->GetData();
+            prev = true;
+        }
+        if(condition != NULL){
+            blockData += condition->GetData();
+            prev = true;
+        }
+        if(increment != NULL){
+            blockData += increment->GetData();
+            prev = true;
+        }
+
     }
 
     if ((proc = body->FindFirstChildById("block")) != NULL) {
@@ -124,6 +130,7 @@ void AnalyzeModule::analyzeLoop(Markup* parseTree, AnalysisTree* analysis) {
     } else if ((proc = body->FindFirstChildById("statement")) != NULL) {
         processStatement(proc, tree);
     }
+
 
 }
 
