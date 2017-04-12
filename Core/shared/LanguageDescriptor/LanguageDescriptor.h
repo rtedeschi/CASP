@@ -106,6 +106,7 @@ class ProductionSet {
         ProductionSetType GetType();
         vector<ProductionSet*> GetChildren();
         string GetSource();
+        string GetMultiplicity();
 
         // Markup Parser(vector<string>);
 

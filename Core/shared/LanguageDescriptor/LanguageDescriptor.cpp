@@ -468,6 +468,11 @@ string ProductionSet::GetSource() {
     return source;
 }
 
+string ProductionSet::GetMultiplicity() {
+    return multiplicity;
+}
+
+
 
 TokenMatch* ProductionSet::MatchStrict(vector<Token> tokens, int startIndex) {
     TokenMatch* t = NULL;

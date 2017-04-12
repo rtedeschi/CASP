@@ -27,9 +27,9 @@ string TranslateModule::Translate(Markup* markup) {
     for (int i = 0; i < children.size(); i++) {
         targetRoot->AddChild(MatchTargetProd(children[i]));
     }
-    markup->Print();
 
-    targetRoot->Print();
+    // markup->Print();
+    // targetRoot->Print();
 
     vector<Token> tl1 = source_ldo->Tokenize(markup);
     vector<Token> tl2 = target_ldo->Tokenize(targetRoot);
@@ -150,10 +150,10 @@ Markup* TranslateModule::TranslateProd(Markup* source, Production* target) {
 
         switch (p->GetType()) {
             case _Terminal:
-                c = HandleTerminal(source, p);
+                c = HandleTerminal(source, p, true);
                 break;
             case _Production:
-                c = HandleProduction(source, p);
+                c = HandleProduction(source, p, true);
                 break;
             case _Alternation:
                 c = HandleAlternation(source, p);
@@ -167,15 +167,15 @@ Markup* TranslateModule::TranslateProd(Markup* source, Production* target) {
 
     return newMarkup;
 }
-Markup* TranslateModule::HandleTerminal(Markup* source, ProductionSet* set) {
+Markup* TranslateModule::HandleTerminal(Markup* source, ProductionSet* set, bool fillInOnNoMatch) {
     string nodeId = set->GetSource();
-
+    Markup* sourceTerminal = source->FindFirstChildById(nodeId);
     string newTerminal = target_ldo->LookupTerminalValue(nodeId);
-    if (newTerminal != "") {
-        return new Markup(nodeId, newTerminal);
-    } else {
-        Markup* sourceTerminal = source->FindFirstChildById(nodeId);
-        if (sourceTerminal != NULL) {
+
+    if (fillInOnNoMatch || sourceTerminal != NULL) {
+        if (newTerminal != "") {
+            return new Markup(nodeId, newTerminal);
+        } else if (sourceTerminal != NULL) {
             // returnData->AddStandardWarning("The translation for terminal '" + nodeId + "' (value = '" + sourceTerminal->GetData() + "') is not guaranteed. Check syntax.");
             // add warning that this is an inconclusive translation
             return new Markup(nodeId, sourceTerminal->GetData());
@@ -185,21 +185,25 @@ Markup* TranslateModule::HandleTerminal(Markup* source, ProductionSet* set) {
     // add warning that there is no matching translation
     return NULL;
 }
-Markup* TranslateModule::HandleProduction(Markup* source, ProductionSet* set) {
+Markup* TranslateModule::HandleProduction(Markup* source, ProductionSet* set, bool dummyOnFail) {
     string nodeId = set->GetSource();
+    Markup* ret = NULL;
 
     Markup* sourceProduction = source->FindFirstChildById(nodeId);
     if (sourceProduction != NULL) {
         Production* targetProd = target_ldo->findProdById(nodeId);
-        Markup* ret = TranslateProd(sourceProduction, targetProd);
+        ret = TranslateProd(sourceProduction, targetProd);
         if (ret != NULL) {
             return ret;
         }
-    }
+    } else {
 
+    }
+    if (dummyOnFail && set->GetMultiplicity() != "?")
+        ret = new Markup(nodeId, "<" + nodeId + ">");
     // returnData->AddStandardWarning("No matching translation for production '" + nodeId + "'");
     // add warning that there is no matching translation
-    return NULL;
+    return ret;
 }
 Markup* TranslateModule::HandleAlternation(Markup* source, ProductionSet* set) {
     Markup* newMarkup = NULL;
@@ -210,10 +214,10 @@ Markup* TranslateModule::HandleAlternation(Markup* source, ProductionSet* set) {
 
         switch (p->GetType()) {
             case _Terminal:
-                newMarkup = HandleTerminal(source, p);
+                newMarkup = HandleTerminal(source, p, false);
                 break;
             case _Production:
-                newMarkup = HandleProduction(source, p);
+                newMarkup = HandleProduction(source, p, false);
                 break;
             case _Alternation:
                 newMarkup = HandleAlternation(source, p);

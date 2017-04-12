@@ -30,8 +30,8 @@ class TranslateModule : public CASP_Plugin {
         Markup* MatchTargetProd(Markup*);
         Markup* TranslateProd(Markup*, Production*);
 
-        Markup* HandleTerminal(Markup*, ProductionSet*);
-        Markup* HandleProduction(Markup*, ProductionSet*);
+        Markup* HandleTerminal(Markup*, ProductionSet*, bool);
+        Markup* HandleProduction(Markup*, ProductionSet*, bool);
         Markup* HandleAlternation(Markup*, ProductionSet*);
 
         LanguageDescriptorObject* target_ldo = NULL;
