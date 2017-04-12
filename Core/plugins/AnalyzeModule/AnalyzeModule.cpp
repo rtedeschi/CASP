@@ -97,7 +97,7 @@ void AnalyzeModule::analyzeProcess(Markup* parseTree, AnalysisTree* analysis) {
 }
 void AnalyzeModule::analyzeLoop(Markup* parseTree, AnalysisTree* analysis) {
 
-    Markup* init = parseTree->FindFirstChildById("for-init");
+    Markup* init = parseTree->FindFirstChildById("for-init")->ChilAt(0);
     Markup* condition = parseTree->FindFirstChildById("for-condition");
     Markup* increment = parseTree->FindFirstChildById("for-increment");
     Markup* body = parseTree->FindFirstChildById("for-body");
@@ -135,7 +135,7 @@ void AnalyzeModule::analyzeLoop(Markup* parseTree, AnalysisTree* analysis) {
 }
 
 void AnalyzeModule::processStatement(Markup* statement, AnalysisTree* analysis) {
-
+//else if and while from outline
     Markup* s = statement->ChildAt(0);
     string id = s->GetID();
 
@@ -146,6 +146,7 @@ void AnalyzeModule::processStatement(Markup* statement, AnalysisTree* analysis) 
     } else if (id == "block") {
         processBlock(s, analysis);
     } else {
+        //else if and while from outline
         s = s->ChildAt(0);
         id = s->GetID();
         if (id == "method-invokation") {
@@ -158,7 +159,7 @@ void AnalyzeModule::processStatement(Markup* statement, AnalysisTree* analysis) 
 }
 void AnalyzeModule::processBlock(Markup* parseTree, AnalysisTree* analysis) {
     Markup* sl = parseTree->FindFirstById("statement-list");
-
+//while loop from outline
     if (sl != NULL) {
         vector<Markup*> statements = sl->Children();
 
