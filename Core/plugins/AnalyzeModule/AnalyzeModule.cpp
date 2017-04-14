@@ -133,9 +133,8 @@ void AnalyzeModule::analyzeLoop(Markup* parseTree, AnalysisTree* analysis) {
 
 
 }
-
+//moved else-if while loops
 void AnalyzeModule::processStatement(Markup* statement, AnalysisTree* analysis) {
-//else if and while from outline
     Markup* s = statement->ChildAt(0);
     string id = s->GetID();
 
@@ -145,28 +144,39 @@ void AnalyzeModule::processStatement(Markup* statement, AnalysisTree* analysis) 
         analyzeDecision(s, analysis);
     } else if (id == "block") {
         processBlock(s, analysis);
-    } else {
-        //else if and while from outline
-        s = s->ChildAt(0);
+    } else if (id == "expression-statement") {
+        s = s->ChildAt(0)->ChildAt(0);
         id = s->GetID();
+        while (id == "grouped-expression") {
+            s = s->ChildAt(1);
+            id = s->GetID();
+        }
+
         if (id == "method-invokation") {
-            analyzeMethodCall(s, analysis);
-        } else {
-            analyzeProcess(s, analysis);
+            currentNode = stripMethodCall(s, analysis, startNode, firstEdgeData);
+        }
+        else {
+            currentNode = stripProcess(s, analysis, startNode, firstEdgeData);
         }
     }
 
+    return currentNode;
 }
+//moved while loop here
 void AnalyzeModule::processBlock(Markup* parseTree, AnalysisTree* analysis) {
     Markup* sl = parseTree->FindFirstById("statement-list");
-//while loop from outline
-    if (sl != NULL) {
-        vector<Markup*> statements = sl->Children();
 
-        for (int i = 0; i < statements.size(); i++) {
-            processStatement(statements[i], analysis);
-        }
+    Node* currentNode = startNode;
+    Markup* csl = parseTree->FindFirstChildById("statement-list");
+    Markup* cs = NULL;
+    int ct = 0;
+
+    while (csl != NULL) {
+        cs = csl->FindFirstChildById("statement");
+        currentNode = processStatement(cs, analysis, currentNode, ct++ == 0 ? firstEdgeData : "");
+        csl = csl->FindFirstChildById("statement-list");
     }
+    return currentNode;
 }
 
 AnalysisTree::AnalysisTree() {
