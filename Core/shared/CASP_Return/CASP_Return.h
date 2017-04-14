@@ -19,14 +19,18 @@ using namespace std;
 
 class GenericData : public Printable {
     public:
-        string type = "";
+        string GetType() {
+            return type;
+        };
         virtual void Print();
+
+    private:
+        string type = "";
 };
 
 template<typename T>
 class GenericLeaf : public GenericData {
     public:
-        string type = "Leaf";
         GenericLeaf(T data) {
             this->data = data;
         };
@@ -39,41 +43,87 @@ class GenericLeaf : public GenericData {
             this->data = data;
         };
 
+        void AddSpecial(T input, string output) {
+            specialLookups[input] = output;
+        };
+
     protected:
+        string type = "Leaf";
         T data;
+        unordered_map<T, string> specialLookups;
+};
+
+template<typename T>
+static inline
+GenericLeaf<T>* CreateLeaf(T data) {
+    GenericLeaf<T>* leaf = new GenericLeaf<T>(data);
+    return leaf;
+};
+template<>
+static inline
+GenericLeaf<bool>* CreateLeaf(bool data) {
+    GenericLeaf<bool>* leaf = new GenericLeaf<bool>(data);
+    leaf->AddSpecial(true, "true");
+    leaf->AddSpecial(false, "false");
+    return leaf;
+};
+template<>
+static inline
+GenericLeaf<string>* CreateLeaf<string>(string data) {
+
+    int index = -1;
+    while ((index = data.find("\"", index + 1)) != -1) {
+        data = data.substr(0, index) + "\\" + data.substr(index, data.size());
+
+        index++;
+    }
+
+    GenericLeaf<string>* leaf = new GenericLeaf<string>("\"" + data + "\"");
+    return leaf;
 };
 
 class GenericObject : public GenericData {
     public:
-        string type = "Object";
+        GenericObject();
+        GenericObject(unordered_map<string, GenericData*>);
         virtual void Print();
         void Add(string, GenericData*);
         GenericData* At(string);
 
     protected:
+        string type = "Object";
         unordered_map<string, GenericData*> data;
 
 };
+GenericObject* CreateObject();
+GenericObject* CreateObject(unordered_map<string, GenericData*>);
 
 class GenericArray : public GenericData {
     public:
-        string type = "Array";
+        GenericArray();
+        GenericArray(vector<GenericData*>);
         virtual void Print();
         void Add(GenericData*);
         GenericData* At(int);
-
     
     protected:
+        string type = "Array";
         vector<GenericData*> data;
 };
+
+GenericArray* CreateArray();
+GenericArray* CreateArray(vector<GenericData*>);
 
 class CASP_Return : public GenericObject {
     public:
         CASP_Return();
 
-        GenericObject* Errors();
-        GenericObject* Warnings();
+        GenericArray* Errors();
+        GenericArray* Warnings();
         GenericObject* Data();
+
+        void AddStandardWarning(string, int = -1);
+        void AddStandardError(string, int = -1);
     
     private:
 };

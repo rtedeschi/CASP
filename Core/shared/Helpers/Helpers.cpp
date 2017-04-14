@@ -25,6 +25,14 @@ namespace Helpers {
         return filetext;
     }
 
+    string DupStr(string str, int count) {
+        string s= "";
+        for (int i = 0; i < count; i++) {
+            s += str;
+        }
+        return s;
+    }
+
     string toLower(string str) {
         string c(str);
         std::transform(c.begin(), c.end(), c.begin(), ::tolower);

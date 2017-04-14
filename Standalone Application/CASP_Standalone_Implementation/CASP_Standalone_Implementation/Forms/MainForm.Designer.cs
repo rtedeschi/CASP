@@ -194,7 +194,7 @@ namespace CASP_Standalone_Implementation
             this.NewArgButton.Name = "NewArgButton";
             this.NewArgButton.Size = new System.Drawing.Size(155, 27);
             this.NewArgButton.TabIndex = 13;
-            this.NewArgButton.Text = "New";
+            this.NewArgButton.Text = "New Arg";
             this.NewArgButton.UseVisualStyleBackColor = true;
             this.NewArgButton.Click += new System.EventHandler(this.NewArgButton_Click);
             // 

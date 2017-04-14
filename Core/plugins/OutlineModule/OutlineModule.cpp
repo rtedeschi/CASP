@@ -58,7 +58,7 @@ Outline* OutlineModule::GetRootOutline(vector<Markup*> parseTrees) {
 
 Outline* OutlineModule::GetFunctionOutline(Markup* functionTree) {
     string functionTitle = functionTree->FindFirstChildById("function-identifier")->GetData();
-    Markup* declarationList = functionTree->FindFirstChildById("function-parameters")->FindFirstChildById("declaration-list");
+    Markup* declarationList = functionTree->FindFirstChildById("function-parameters")->FindFirstChildById("function-parameter-list");
     string startText = functionTitle;
     if (declarationList != NULL) {
         startText += ": " + declarationList->GetData();
@@ -76,8 +76,7 @@ Outline* OutlineModule::GetFunctionOutline(Markup* functionTree) {
 }
 
 CASP_Return* OutlineModule::FormatData(vector<Outline*> outlines) {
-    CASP_Return* ret = new CASP_Return();
-    GenericObject* data = ret->Data();
+    GenericObject* data = returnData->Data();
     GenericArray* o = new GenericArray();
 
     for (int i = 0; i < outlines.size(); i++) {
@@ -91,7 +90,7 @@ CASP_Return* OutlineModule::FormatData(vector<Outline*> outlines) {
     // ret->Print();
     // cout << endl;
 
-    return ret;
+    return returnData;
 }
 
 Node* OutlineModule::stripProcess(Markup* parseTree, Outline* outline, Node* startNode, string firstEdgeData) {
@@ -99,7 +98,7 @@ Node* OutlineModule::stripProcess(Markup* parseTree, Outline* outline, Node* sta
     Node* currentNode = startNode;
 
     string type = parseTree->GetID();
-    bool sameType = currentNode->data.find(type) == 0;
+    bool sameType = currentNode->data.find(type + ":") == 0;
 
     if (!sameType) {
         currentNode = outline->AppendBlock(Process, type + ":\n\t" + parseTree->GetData(), currentNode);
@@ -129,46 +128,63 @@ Node* OutlineModule::stripDecision(Markup* parseTree, Outline* outline, Node* st
     Node* endDecision = new Node("End Decision", EndDecision, 0);
 
     Markup* condition = parseTree->FindFirstChildById("expression");
+    Markup* body = parseTree->FindFirstChildById("decision-body");
     Markup* proc;
-    vector<Markup*> decisionCases = parseTree->FindAllChildrenById("decision-case");
+    Markup* dc = parseTree->FindFirstChildById("decision-cases");
+    vector<Markup*> decisionCases;
+    while (dc != NULL) {
+        decisionCases.push_back(dc->FindFirstChildById("decision-case"));
+        dc = dc->FindFirstChildById("decision-cases");
+    }
     Markup* fallback = parseTree->FindFirstChildById("decision-fallback");
     string blockData;
 
     blockData = condition->GetData() + "?";
     currentDecisionHead = outline->AppendBlock(Decision, blockData, currentNode, firstEdgeData);
 
-    if ((proc = parseTree->FindFirstChildById("block")) != NULL) {
+    if ((proc = body->FindFirstChildById("block")) != NULL) {
         currentNode = processBlock(proc, outline, currentDecisionHead, "True");
         currentNode->AddEdgeTo(endDecision);
     }
-    else if ((proc = parseTree->FindFirstChildById("statement")) != NULL) {
+    else if ((proc = body->FindFirstChildById("statement")) != NULL) {
         currentNode = processStatement(proc, outline, currentDecisionHead, "True");
         currentNode->AddEdgeTo(endDecision);
+    }
+    else {
+        currentNode->AddEdgeTo(endDecision, "True");
     }
 
     for (int i = 0; i < decisionCases.size(); i++) {
         condition = decisionCases[i]->FindFirstChildById("expression");
+        body = decisionCases[i]->FindFirstChildById("decision-body");
         blockData = condition->GetData() + " ?";
         currentDecisionHead = outline->AppendBlock(Decision, blockData, currentDecisionHead, "False");
 
-        if ((proc = decisionCases[i]->FindFirstChildById("block")) != NULL) {
+        if ((proc = body->FindFirstChildById("block")) != NULL) {
             currentNode = processBlock(proc, outline, currentDecisionHead, "True");
             currentNode->AddEdgeTo(endDecision);
         }
-        else if ((proc = decisionCases[i]->FindFirstChildById("statement")) != NULL) {
+        else if ((proc = body->FindFirstChildById("statement")) != NULL) {
             currentNode = processStatement(proc, outline, currentDecisionHead, "True");
             currentNode->AddEdgeTo(endDecision);
+        }
+        else {
+            currentNode->AddEdgeTo(endDecision, "True");
         }
     }
 
     if (fallback != NULL) {
-        if ((proc = fallback->FindFirstChildById("block")) != NULL) {
+        body = fallback->FindFirstChildById("decision-body");
+        if ((proc = body->FindFirstChildById("block")) != NULL) {
             currentNode = processBlock(proc, outline, currentDecisionHead, "False");
             currentNode->AddEdgeTo(endDecision);
         }
-        else if ((proc = fallback->FindFirstChildById("statement")) != NULL) {
+        else if ((proc = body->FindFirstChildById("statement")) != NULL) {
             currentNode = processStatement(proc, outline, currentDecisionHead, "False");
             currentNode->AddEdgeTo(endDecision);
+        }
+        else {
+            currentNode->AddEdgeTo(endDecision, "False");
         }
     } else {
         currentDecisionHead->AddEdgeTo(endDecision, "False");
@@ -178,9 +194,9 @@ Node* OutlineModule::stripDecision(Markup* parseTree, Outline* outline, Node* st
 }
 Node* OutlineModule::stripLoop(Markup* parseTree, Outline* outline, Node* startNode, string firstEdgeData) {
 
-    Markup* init = parseTree->FindFirstChildById("for-init");
-    Markup* condition = parseTree->FindFirstChildById("for-condition");
-    Markup* increment = parseTree->FindFirstChildById("for-increment");
+    Markup* init = parseTree->FindFirstChildById("for-init")->ChildAt(0);
+    Markup* condition = parseTree->FindFirstChildById("for-condition")->ChildAt(0);
+    Markup* increment = parseTree->FindFirstChildById("for-increment")->ChildAt(0);
     Markup* body = parseTree->FindFirstChildById("for-body");
     Markup* proc = NULL;
     string blockData = "Loop";
@@ -214,20 +230,22 @@ Node* OutlineModule::stripLoop(Markup* parseTree, Outline* outline, Node* startN
     } else if ((proc = body->FindFirstChildById("statement")) != NULL) {
         currentNode = processStatement(proc, outline, startNode, "Loop Iteration");
         currentNode->AddEdgeTo(startNode);
+    } else {
+        currentNode->AddEdgeTo(currentNode, "Loop Iteration");
     }
 
     return startNode;
 }
 Node* OutlineModule::processBlock(Markup* parseTree, Outline* outline, Node* startNode, string firstEdgeData) {
     Node* currentNode = startNode;
-    Markup* sl = parseTree->FindFirstById("statement-list");
+    Markup* csl = parseTree->FindFirstChildById("statement-list");
+    Markup* cs = NULL;
+    int ct = 0;
 
-    if (sl != NULL) {
-        vector<Markup*> statements = sl->Children();
-
-        for (int i = 0; i < statements.size(); i++) {
-            currentNode = processStatement(statements[i], outline, currentNode, firstEdgeData);
-        }
+    while (csl != NULL) {
+        cs = csl->FindFirstChildById("statement");
+        currentNode = processStatement(cs, outline, currentNode, ct++ == 0 ? firstEdgeData : "");
+        csl = csl->FindFirstChildById("statement-list");
     }
     return currentNode;
 }
@@ -242,12 +260,18 @@ Node* OutlineModule::processStatement(Markup* statement, Outline* outline, Node*
         currentNode = stripDecision(s, outline, startNode, firstEdgeData);
     } else if (id == "block") {
         currentNode = processBlock(s, outline, startNode, firstEdgeData);
-    } else {
-        s = s->ChildAt(0);
+    } else if (id == "expression-statement") {
+        s = s->ChildAt(0)->ChildAt(0);
         id = s->GetID();
+        while (id == "grouped-expression") {
+            s = s->ChildAt(1);
+            id = s->GetID();
+        }
+
         if (id == "method-invokation") {
             currentNode = stripMethodCall(s, outline, startNode, firstEdgeData);
-        } else {
+        }
+        else {
             currentNode = stripProcess(s, outline, startNode, firstEdgeData);
         }
     }

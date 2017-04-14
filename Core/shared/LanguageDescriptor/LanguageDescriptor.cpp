@@ -13,7 +13,11 @@ using namespace std;
 Token::Token(string id, string value) {
     this->id = id;
     this->value = value;
-}
+};
+
+void Token::Print() {
+    cout << "[" << id << "]\t" << value << endl;
+};
 
 string LanguageDescriptorObject::LookupTerminalValue(string terminalID) {
     return terminals[terminalID];
@@ -53,18 +57,35 @@ void LanguageDescriptorObject::ParseReservedWords(string data) {
 void LanguageDescriptorObject::ParseFSM(string data) {
 
     string t = string(data);
-    regex r = regex("^\\([ \t]*([^ \t\n]+)[ \t]*,[ \t]*([^ \t\n]+)[ \t]*\\)[ \t]*->[ \t]*([^ \t\n]+)$");
+    regex r = regex("^\\([ \t]*([a-zA-Z_0-9]+)[ \t]*,[ \t]*([^\t\n]+)[ \t]*\\)[ \t]*->[ \t]*([^ \t\n]+)$");
     smatch matches;
 
     while (regex_search(t, matches, r)) {
         string fromState = matches[1].str();
         string toState = matches[3].str();
         string chars = matches[2].str();
+
+        int index = -1;
+        while ((index = chars.find("\\", index + 1)) != -1) {
+            if (index < chars.size() - 1) {
+                chars = chars.substr(0, index) + chars.substr(index + 1, chars.size());
+                switch (chars[index]) {
+                    case 'n':
+                        chars[index] = '\n';
+                        break;
+                    case 't':
+                        chars[index] = '\t';
+                        break;
+                }
+            } else 
+                chars = chars.substr(0, index);
+        }
+
         vector<char> stateTransitions;
         for (int i = 0; i < chars.size(); i++) {
             stateTransitions.push_back(chars[i]);
         }
-
+        
         stateMachine.AddState(fromState);
         stateMachine.AddState(toState);
         stateMachine.AddTransition(fromState, toState, stateTransitions);
@@ -103,54 +124,67 @@ void LanguageDescriptorObject::ParseFSM(string data) {
 }
 
 vector<Token> LanguageDescriptorObject::Tokenize(string input) {
-    input += " ";
-
     vector<Token> tokens;
-
     string token;
-    string str;
+    string tokenData;
+
     stateMachine.Reset();
+
     for (int i = 0; i < input.size(); i++) {
-        if (!stateMachine.Transition(input[i])) {
-            token = stateMachine.AcceptedToken();
+        tokenData += input[i];
+        if ((token = stateMachine.Transition(input[i])) != "") {
             if (token == "ERROR") {
                 if (input[i] != ' ' && input[i] != '\n' && input[i] != '\t')
-                    cout << "State machine encountered an error on character '" << (int)input[i] << "'\n";
+                    cout << "State machine encountered an error on character '" << input[i] << "'\n";
             } else {
-                vector<char> inputVector = stateMachine.ScannedInput();
-                char* c = (char*)calloc(inputVector.size() + 1, sizeof(char));
-                copy(inputVector.begin(), inputVector.end(), c);
-                c[inputVector.size()] = '\0';
-                str = string(c);
+                tokenData.pop_back();
 
-                if (reservedWords[str] != "")
-                    token = reservedWords[str];
-
-                // cout << "State machine accepted token '" << token << "' with data '" << str << "'\n";
-                i--;
+                if (reservedWords[tokenData] != "")
+                    token = reservedWords[tokenData];
                 
-                tokens.push_back(Token(token, str));
+                tokens.push_back(Token(token, tokenData));
+                i--;
             }
-            stateMachine.Reset();
+            tokenData = "";
         }
     }
 
-    // accept the last token
-    token = stateMachine.AcceptedToken();
-    if (token == "ERROR") {
-        // eof is not actually an error because we're adding an extra space to the end
-        // cout << "State machine encountered an error on character 'EOF'\n";
-    } else {
-        vector<char> inputVector = stateMachine.ScannedInput();
-        char* c = (char*)calloc(inputVector.size() + 1, sizeof(char));
-        copy(inputVector.begin(), inputVector.end(), c);
-        c[inputVector.size()] = '\0';
-        str = string(c);
-        // cout << "State machine accepted token '" << token << "' with data '" << str << "'\n";
-
-        tokens.push_back(Token(token, str));
+    if (token == "") {
+        // accept the last token, only if there is one to accept
+        token = stateMachine.Transition('\0');
+        if (token == "" || token == "ERROR") {
+            cout << "State machine encountered an error on character 'EOF'\n";
+        } else {
+            if (reservedWords[tokenData] != "")
+                token = reservedWords[tokenData];
+            
+            tokens.push_back(Token(token, tokenData));
+        }
     }
     stateMachine.Reset();
+
+    for (int i = 0; i < tokens.size(); i++) {
+        tokens[i].Print();
+    }
+
+    return tokens;
+
+}
+
+vector<Token> LanguageDescriptorObject::Tokenize(Markup* input) {
+    vector<Token> tokens;
+
+    if (!input->IsLeaf()) {
+        vector<Markup*> children = input->Children();
+
+        for (int i = 0; i < children.size(); i++) {
+            vector<Token> tl = Tokenize(children[i]);
+            tokens.insert(tokens.end(), tl.begin(), tl.end());
+        }
+    } else {
+        Token t(input->GetID(), input->GetData());
+        tokens.push_back(t);
+    }
 
     return tokens;
 
@@ -161,32 +195,29 @@ LanguageDescriptorObject::LanguageDescriptorObject()
 
 }
 
-LanguageDescriptorObject::LanguageDescriptorObject(string file)
+LanguageDescriptorObject::LanguageDescriptorObject(string language)
 {
-    Parse(file);
+    Parse(language);
 }
 
 LanguageDescriptorObject::~LanguageDescriptorObject() {
     
 }
 
-void LanguageDescriptorObject::Parse(string file) {
+void LanguageDescriptorObject::Parse(string language) {
     // getpath function ?
-    FILE* temp = fopen(file.c_str(), "r");
-    if (temp == NULL) {
-        temp = fopen((CFG_DIR + file + CFG_EXT).c_str(), "r");
-        if (temp != NULL) {
-            fclose(temp);
-            file = CFG_DIR + file + CFG_EXT;
-        } else {
-            // try PATH environment variable? 
-            cout << "Cannot find language file" << endl;
-        }
-    } else {
+    string file = CFG_DIR + language + CFG_EXT;
+    FILE* temp = fopen((file).c_str(), "r");
+    if (temp != NULL) {
         fclose(temp);
+    } else {
+        // try PATH environment variable? 
+        cout << "Cannot find language file" << endl;
     }
     // return file;
     //
+    this->language = language;
+
     string data = Helpers::ReadFile(file); // TODO: file data should probably already be passed in?
     string t = data;
     ParseTerminalValues(data);
@@ -227,6 +258,10 @@ int LanguageDescriptorObject::getProdIndex(string id) {
         }
     }
     return -1;
+}
+
+string LanguageDescriptorObject::GetLanguage() {
+    return language;
 }
 
 vector<Production*> LanguageDescriptorObject::GetOrderedProductions(vector<string> stringlist) {
@@ -433,6 +468,23 @@ Production* ProductionSet::GetProduction() {
     return prod;
 }
 
+ProductionSetType ProductionSet::GetType() {
+    return type;
+}
+
+vector<ProductionSet*> ProductionSet::GetChildren() {
+    return children;
+}
+
+string ProductionSet::GetSource() {
+    return source;
+}
+
+string ProductionSet::GetMultiplicity() {
+    return multiplicity;
+}
+
+
 
 TokenMatch* ProductionSet::MatchStrict(vector<Token> tokens, int startIndex) {
     TokenMatch* t = NULL;
@@ -462,254 +514,117 @@ TokenMatch* ProductionSet::MatchStrict(vector<Token> tokens, int startIndex) {
     return t;
 }
 
+TokenMatch* ProductionSet::MatchGroup(vector<Token> tokens, int startIndex) {
+
+    TokenMatch* match = new TokenMatch();
+    bool isMatch = true, matched = true;
+    int i = startIndex;
+
+    TokenMatch* groupMatch;
+    for (int j = 0; j < children.size(); j++) {
+        groupMatch = children[j]->MatchStrict(tokens, i);
+        if (groupMatch == NULL) {
+            matched = false;
+            match->submatches.clear();
+            break;
+        }
+        if (groupMatch->length > 0) {
+            match->submatches.push_back(groupMatch);
+            i += groupMatch->length;
+        }
+    }
+
+    isMatch = multiplicity != "" || matched;
+
+    if (!isMatch)
+        return NULL;
+
+    match->begin = startIndex;
+    match->end = i;
+    match->length = match->end - match->begin;
+    match->match = vector<Token>(&tokens[match->begin], &tokens[match->end]);
+
+    return match;
+}
 TokenMatch* ProductionSet::MatchTerminal(vector<Token> tokens, int startIndex) {
 
     if (startIndex >= tokens.size())
         return NULL;
 
     TokenMatch* match = new TokenMatch();
-    int roundMatchCount = 0;
-    bool isMatch = true, more = true;
-    int i = startIndex;
+    bool isMatch = true, matched = false;
 
-    regex r = regex("([^=]*)(?:=(.*))?");
-    smatch matches;
+    matched = tokens[startIndex].id == source;
+    isMatch = multiplicity != "" || matched;
 
-    regex_search(source, matches, r);
-    string tok = matches[1];
-    string val = matches[2];
-
-    do {
-        bool roundMatch = false;
-
-        // cout << tokens[i].id << " (" << tokens[i].value << ") =? " << tok << " (" << val << ") -> ";
-
-        if (tokens[i].id == tok) {
-            if (val == "" || val == tokens[i].value) {
-                // cout << "true\n";
-                i++;
-                roundMatch = true;
-            }
-            // else {
-            //     cout << "false\n";
-            // }
-        }
-        // else {
-        //         cout << "false\n";
-        //     }
-
-        if (roundMatch) {
-            roundMatchCount++;
-        }
-        if (!roundMatch || multiplicity == "?" || multiplicity == "") {
-            more = false;
-        }
-
-    } while (more && i < tokens.size());
-
-    if (multiplicity == "*") {
-        // do nothing
-    } else if (multiplicity == "+") {
-        if (roundMatchCount == 0) {
-            isMatch = false;
-        }
-    } else if (multiplicity == "?") {
-        // do nothing
-    } else if (multiplicity == "") {
-        if (roundMatchCount != 1) {
-            isMatch = false;
-        }
-    }
-
-    if (!isMatch) {
+    if (!isMatch)
         return NULL;
-    }
-
-    // match->prod = GetProduction()->GetId();
-    match->begin = startIndex;
-    match->end = i;
-    match->length = i - startIndex;
-    match->match = vector<Token>(&tokens[startIndex], &tokens[i]);
-
-    // for (int p = 0; p < match->match.size(); p++) {
-    //     cout << "\t\t" << match->match[p].id << endl;
-    // }
-
-    return match;
-}
-TokenMatch* ProductionSet::MatchGroup(vector<Token> tokens, int startIndex) {
-
-    TokenMatch* match = new TokenMatch();
-    int roundMatchCount = 0;
-    bool isMatch = true, more = true;
-    int i = startIndex;
-
-    do {
-        bool roundMatch = true;
-
-        TokenMatch* groupMatch;
-        for (int j = 0; j < children.size(); j++) {
-            groupMatch = children[j]->MatchStrict(tokens, i);
-            if (groupMatch == NULL) {
-                roundMatch = false;
-                match->submatches.clear();
-                break;
-            }
-            if (groupMatch->length > 0) {
-                match->submatches.push_back(groupMatch);
-                i += groupMatch->length;
-            }
-        }
-
-        if (roundMatch) {
-            roundMatchCount++;
-        } 
-        if (!roundMatch || multiplicity == "?" || multiplicity == "") {
-            more = false;
-        }
-
-    } while (more && i < tokens.size());
-
-    if (multiplicity == "*") {
-        // do nothing
-    } else if (multiplicity == "+") {
-        if (roundMatchCount == 0) {
-            isMatch = false;
-        }
-    } else if (multiplicity == "?") {
-        // do nothing
-    } else if (multiplicity == "") {
-        if (roundMatchCount != 1) {
-            isMatch = false;
-        }
-    }
-
-    if (!isMatch) {
-        return NULL;
-    }
 
     match->begin = startIndex;
-    match->end = i;
-    match->length = i - startIndex;
-    match->match = vector<Token>(&tokens[startIndex], &tokens[i]);
+    match->end = startIndex + (matched ? 1 : 0);
+    match->length = match->end - match->begin;
+    match->match = vector<Token>(&tokens[match->begin], &tokens[match->end]);
 
     return match;
 }
 TokenMatch* ProductionSet::MatchAlternation(vector<Token> tokens, int startIndex) {
 
     TokenMatch* match = new TokenMatch();
-    int roundMatchCount = 0;
-    bool isMatch = true, more = true;
+    bool isMatch = true, matched = false;
     int i = startIndex;
 
-    do {
-        bool roundMatch = false;
-
-        TokenMatch* alternationMatch;
-        for (int j = 0; j < children.size(); j++) {
-            alternationMatch = children[j]->MatchStrict(tokens, i);
-            if (alternationMatch != NULL) {
-                roundMatch = true;
-                if (alternationMatch->length > 0) {
-                    i += alternationMatch->length;
-                    match->submatches.push_back(alternationMatch);
-                }
-                break;
+    TokenMatch* alternationMatch = NULL;
+    for (int j = 0; j < children.size(); j++) {
+        alternationMatch = children[j]->MatchStrict(tokens, i);
+        if (alternationMatch != NULL) {
+            matched = true;
+            if (alternationMatch->length > 0) {
+                i += alternationMatch->length;
+                match->submatches.push_back(alternationMatch);
             }
-        }
-
-        if (roundMatch) {
-            roundMatchCount++;
-        } 
-        if (!roundMatch || multiplicity == "?" || multiplicity == "") {
-            more = false;
-        }
-
-    } while (isMatch && more && i < tokens.size());
-
-    if (multiplicity == "*") {
-        // do nothing
-    } else if (multiplicity == "+") {
-        if (roundMatchCount == 0) {
-            isMatch = false;
-        }
-    } else if (multiplicity == "?") {
-        // do nothing
-    } else if (multiplicity == "") {
-        if (roundMatchCount != 1) {
-            isMatch = false;
+            break;
         }
     }
 
-    if (!isMatch) {
+    isMatch = multiplicity != "" || matched;
+
+    if (!isMatch)
         return NULL;
-    }
 
     match->begin = startIndex;
     match->end = i;
-    match->length = i - startIndex;
-    match->match = vector<Token>(&tokens[startIndex], &tokens[i]);
+    match->length = match->end - match->begin;
+    match->match = vector<Token>(&tokens[match->begin], &tokens[match->end]);
 
     return match;
 }
 TokenMatch* ProductionSet::MatchProduction(vector<Token> tokens, int startIndex) {
 
     TokenMatch* match = new TokenMatch();
-    int roundMatchCount = 0;
-    bool isMatch = true, more = true;
+    bool isMatch = true, matched = false;
     int i = startIndex;
+
     Production* prod = this->prod->GetLDO()->findProdById(source);
-
-    do {
-        bool roundMatch = true;
-
-        if (prod != NULL) {
-            TokenMatch* prodMatch = prod->GetRootProductionSet()->MatchStrict(tokens, i);
-            if (prodMatch != NULL) {
-                if (prodMatch->length > 0) {
-                    i += prodMatch->length;
-                    match->submatches.push_back(prodMatch);
-                }
-            } else {
-                roundMatch = false;
+    if (prod != NULL) {
+        TokenMatch* prodMatch = prod->GetRootProductionSet()->MatchStrict(tokens, i);
+        if (prodMatch != NULL) {
+            if (prodMatch->length > 0) {
+                i += prodMatch->length;
+                match->submatches.push_back(prodMatch);
             }
-        } else {
-            roundMatch = false;
-        }
-
-        if (roundMatch) {
-            roundMatchCount++;
-        }
-        if (!roundMatch || multiplicity == "?" || multiplicity == "") {
-            more = false;
-        }
-
-    } while (isMatch && more && i < tokens.size());
-
-    if (multiplicity == "*") {
-        // do nothing
-    } else if (multiplicity == "+") {
-        if (roundMatchCount == 0) {
-            isMatch = false;
-        }
-    } else if (multiplicity == "?") {
-        // do nothing
-    } else if (multiplicity == "") {
-        if (roundMatchCount != 1) {
-            isMatch = false;
+            matched = true;
         }
     }
 
-    if (!isMatch) {
+    isMatch = multiplicity != "" || matched;
+
+    if (!isMatch)
         return NULL;
-    }
 
-    // cout << "Matched " << GetProduction()->GetId() << endl;
-    // match->prod = GetProduction()->GetId();
     match->begin = startIndex;
     match->end = i;
-    match->length = i - startIndex;
-    match->match = vector<Token>(&tokens[startIndex], &tokens[i]);
+    match->length = match->end - match->begin;
+    match->match = vector<Token>(&tokens[match->begin], &tokens[match->end]);
 
     return match;
 }
