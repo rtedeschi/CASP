@@ -11,6 +11,7 @@
 
 #include <string>
 #include <vector>
+#include <unordered_map>
 #include <list>
 #include <algorithm>
 
@@ -53,21 +54,12 @@ class State {
         void AddTransition(State<T>* target, vector<T> input) {
             this->transitionInputs.push_back(input);
             this->transitionStates.push_back(target);
+            for (int i = 0; i < input.size(); i++) {
+                transitions[input[i]] = target;
+            }
         };
         State<T>* Transition(T input) {
-            int len = transitionInputs.size();
-
-            for (int i = 0; i < len; i++) {
-                int size = transitionInputs[i].size();
-
-                for (int j = 0; j < size; j++) {
-                    if (input == transitionInputs[i][j]) {
-                        return transitionStates[i];
-                    }
-                }
-            }
-
-            return NULL;
+            return transitions[input];
         };
         string GetId() {
             return id;
@@ -94,6 +86,7 @@ class State {
         };
 
     private:
+        unordered_map<T, State<T>*> transitions;
         vector<State<T>*> transitionStates;
         vector<vector<T>> transitionInputs;
         string id = "";
@@ -109,7 +102,7 @@ class FSM {
         State<T>* AddState(string id) {
             if (!HasState(id)) {
                 State<T>* newState = new State<T>(id);
-                states.push_back(newState);
+                states[id] = newState;
                 return newState;
             }
             return NULL;
@@ -140,60 +133,44 @@ class FSM {
             return GetState(id) != NULL;
         };
         State<T>* GetState(string id) {
-            int size = states.size();
-            for (int i = 0; i < size; i++) {
-                if (states[i]->GetId() == id)
-                    return states[i];
-            }
-            return NULL;
+            return states[id];
         };
-        bool Transition(T input) {
+        string Transition(T input) {
+            string ret = "";
             if (currentState != NULL) {
                 State<T>* nextState = currentState->Transition(input);
                 if (nextState != NULL) {
                     currentState = nextState;
-                    scannedInput.push_back(input);
-                } else
-                    complete = true;
+                } else {
+                    if (currentState->IsGoal()) {
+                        ret = currentState->GetToken();
+                        Reset();
+                    } else
+                        ret = "ERROR";
+                }
+            } else {
+                ret = "ERROR";
+                Reset();
             }
-            return !complete;
+            return ret;
         };
         State<T>* CurrentState() {
             return currentState;
         };
-        bool Complete() {
-            return complete;
-        };
-        bool ReachedGoal() {
-            return currentState != NULL && currentState->IsGoal();
-        };
-        string AcceptedToken() {
-            if (ReachedGoal())
-                return currentState->GetToken();
-            return "ERROR";
-        };
         void Reset() {
-            complete = false;
             currentState = initialState;
-            scannedInput.clear();
         };
-        vector<T> ScannedInput() {
-            return scannedInput;
-        }
 
         void Print() {
             cout << "---- FINITE STATE MACHINE ----\n";
             cout << "Initial State: " << initialState->GetId() << endl;
 
-            for (int i = 0; i < states.size(); i++) {
-                states[i]->Print();
-            }
+            for ( auto it = states.begin(); it != states.end(); ++it )
+                it->second->Print();
         };
 
     private:
-        bool complete = false;
-        vector<T> scannedInput;
-        vector<State<T>*> states;
+        unordered_map<string, State<T>*> states;
         State<T>* initialState = NULL;
         State<T>* currentState = NULL;
 };

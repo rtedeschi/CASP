@@ -57,18 +57,35 @@ void LanguageDescriptorObject::ParseReservedWords(string data) {
 void LanguageDescriptorObject::ParseFSM(string data) {
 
     string t = string(data);
-    regex r = regex("^\\([ \t]*([^ \t\n]+)[ \t]*,[ \t]*([^ \t\n]+)[ \t]*\\)[ \t]*->[ \t]*([^ \t\n]+)$");
+    regex r = regex("^\\([ \t]*([a-zA-Z_0-9]+)[ \t]*,[ \t]*([^\t\n]+)[ \t]*\\)[ \t]*->[ \t]*([^ \t\n]+)$");
     smatch matches;
 
     while (regex_search(t, matches, r)) {
         string fromState = matches[1].str();
         string toState = matches[3].str();
         string chars = matches[2].str();
+
+        int index = -1;
+        while ((index = chars.find("\\", index + 1)) != -1) {
+            if (index < chars.size() - 1) {
+                chars = chars.substr(0, index) + chars.substr(index + 1, chars.size());
+                switch (chars[index]) {
+                    case 'n':
+                        chars[index] = '\n';
+                        break;
+                    case 't':
+                        chars[index] = '\t';
+                        break;
+                }
+            } else 
+                chars = chars.substr(0, index);
+        }
+
         vector<char> stateTransitions;
         for (int i = 0; i < chars.size(); i++) {
             stateTransitions.push_back(chars[i]);
         }
-
+        
         stateMachine.AddState(fromState);
         stateMachine.AddState(toState);
         stateMachine.AddTransition(fromState, toState, stateTransitions);
@@ -107,54 +124,48 @@ void LanguageDescriptorObject::ParseFSM(string data) {
 }
 
 vector<Token> LanguageDescriptorObject::Tokenize(string input) {
-    input += " ";
-
     vector<Token> tokens;
-
     string token;
-    string str;
+    string tokenData;
+
     stateMachine.Reset();
+
     for (int i = 0; i < input.size(); i++) {
-        if (!stateMachine.Transition(input[i])) {
-            token = stateMachine.AcceptedToken();
+        tokenData += input[i];
+        if ((token = stateMachine.Transition(input[i])) != "") {
             if (token == "ERROR") {
                 if (input[i] != ' ' && input[i] != '\n' && input[i] != '\t')
-                    cout << "State machine encountered an error on character '" << (int)input[i] << "'\n";
+                    cout << "State machine encountered an error on character '" << input[i] << "'\n";
             } else {
-                vector<char> inputVector = stateMachine.ScannedInput();
-                char* c = (char*)calloc(inputVector.size() + 1, sizeof(char));
-                copy(inputVector.begin(), inputVector.end(), c);
-                c[inputVector.size()] = '\0';
-                str = string(c);
+                tokenData.pop_back();
 
-                if (reservedWords[str] != "")
-                    token = reservedWords[str];
-
-                // cout << "State machine accepted token '" << token << "' with data '" << str << "'\n";
-                i--;
+                if (reservedWords[tokenData] != "")
+                    token = reservedWords[tokenData];
                 
-                tokens.push_back(Token(token, str));
+                tokens.push_back(Token(token, tokenData));
+                i--;
             }
-            stateMachine.Reset();
+            tokenData = "";
         }
     }
 
-    // accept the last token
-    token = stateMachine.AcceptedToken();
-    if (token == "ERROR") {
-        // eof is not actually an error because we're adding an extra space to the end
-        // cout << "State machine encountered an error on character 'EOF'\n";
-    } else {
-        vector<char> inputVector = stateMachine.ScannedInput();
-        char* c = (char*)calloc(inputVector.size() + 1, sizeof(char));
-        copy(inputVector.begin(), inputVector.end(), c);
-        c[inputVector.size()] = '\0';
-        str = string(c);
-        // cout << "State machine accepted token '" << token << "' with data '" << str << "'\n";
-
-        tokens.push_back(Token(token, str));
+    if (token == "") {
+        // accept the last token, only if there is one to accept
+        token = stateMachine.Transition('\0');
+        if (token == "" || token == "ERROR") {
+            cout << "State machine encountered an error on character 'EOF'\n";
+        } else {
+            if (reservedWords[tokenData] != "")
+                token = reservedWords[tokenData];
+            
+            tokens.push_back(Token(token, tokenData));
+        }
     }
     stateMachine.Reset();
+
+    for (int i = 0; i < tokens.size(); i++) {
+        tokens[i].Print();
+    }
 
     return tokens;
 

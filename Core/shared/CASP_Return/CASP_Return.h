@@ -70,6 +70,14 @@ GenericLeaf<bool>* CreateLeaf(bool data) {
 template<>
 static inline
 GenericLeaf<string>* CreateLeaf<string>(string data) {
+
+    int index = -1;
+    while ((index = data.find("\"", index + 1)) != -1) {
+        data = data.substr(0, index) + "\\" + data.substr(index, data.size());
+
+        index++;
+    }
+
     GenericLeaf<string>* leaf = new GenericLeaf<string>("\"" + data + "\"");
     return leaf;
 };
