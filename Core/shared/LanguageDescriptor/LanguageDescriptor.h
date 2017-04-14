@@ -59,6 +59,8 @@ class LanguageDescriptorObject
         vector<Production*> GetOrderedProductions(vector<string>);
         vector<Production*> GetProductions();
 
+        string GetLanguage();
+
 
     private:
         void ParseTerminalValues(string);
@@ -69,6 +71,7 @@ class LanguageDescriptorObject
         unordered_map<string, string> reservedWords;
         vector<Production*> productions;
         FSM<char> stateMachine;
+        string language;
 };
 
 class TokenMatch {

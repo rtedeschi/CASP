@@ -30,8 +30,8 @@ namespace CASP_Standalone_Implementation
             { "Analyze", null },
             { "Lint", null },
             { "Outline", typeof(CASP_OutlineForm) },
-            { "Print", null },
-            { "Translate", null }
+            { "Print", typeof(CASP_PrintForm) },
+            { "Translate", typeof(CASP_TranslateForm) }
         };
 
         public static string TempFilename = "CASP_Temp_Src.tmp";

@@ -56,6 +56,18 @@
     <Compile Include="Forms\AddArgForm.Designer.cs">
       <DependentUpon>AddArgForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\CASP_PrintForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\CASP_PrintForm.Designer.cs">
+      <DependentUpon>CASP_PrintForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\CASP_TranslateForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\CASP_TranslateForm.Designer.cs">
+      <DependentUpon>CASP_TranslateForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Forms\CASP_OutlineForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -76,11 +88,19 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Src\CASP_OutputForm.cs" />
+    <Compile Include="Src\CASP_OutputForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Src\ConsoleWrapper.cs" />
     <Compile Include="Src\Outline.cs" />
     <EmbeddedResource Include="Forms\AddArgForm.resx">
       <DependentUpon>AddArgForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\CASP_PrintForm.resx">
+      <DependentUpon>CASP_PrintForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\CASP_TranslateForm.resx">
+      <DependentUpon>CASP_TranslateForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\CASP_OutlineForm.resx">
       <DependentUpon>CASP_OutlineForm.cs</DependentUpon>

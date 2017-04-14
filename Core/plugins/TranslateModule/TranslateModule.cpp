@@ -18,7 +18,7 @@ CASP_Return* TranslateModule::Execute(Markup* markup, LanguageDescriptorObject* 
 
 }
 
-string TranslateModule::Translate(Markup* markup) {
+void TranslateModule::Translate(Markup* markup) {
 
     Markup* targetRoot = new Markup("ROOT");
     string nodeId = markup->GetID();
@@ -37,7 +37,15 @@ string TranslateModule::Translate(Markup* markup) {
     cout << endl << PrettyPrint(tl1) << endl << endl;
     cout << endl << PrettyPrint(tl2) << endl << endl;
 
-    return "";
+    returnData->Data()->Add("OriginalSource", CreateObject({
+        { "Language" , CreateLeaf(source_ldo->GetLanguage()) },
+        { "Data" , CreateLeaf(PrettyPrint(tl1)) }
+    }));
+
+    returnData->Data()->Add("TranslatedSource", CreateObject({
+        { "Language" , CreateLeaf(target_ldo->GetLanguage()) },
+        { "Data" , CreateLeaf(PrettyPrint(tl2)) }
+    }));
 
 }
 
@@ -52,6 +60,7 @@ string TranslateModule::PrintBlockBody(vector<Token> tokens, int* index, int tab
     int size = tokens.size();
     bool finishedBlock = false;
     bool endStmt = false;
+    bool forStmts = false;
 
     for (i = *index; i < size; i++) {
         Token t = tokens[i];
@@ -67,6 +76,7 @@ string TranslateModule::PrintBlockBody(vector<Token> tokens, int* index, int tab
             i--;
             finishedBlock = true;
             endStmt = false;
+            forStmts = false;
             continue;
         } else if (t.id == "R_CU_BRACKET") {
             if (!finishedBlock)
@@ -77,7 +87,7 @@ string TranslateModule::PrintBlockBody(vector<Token> tokens, int* index, int tab
             str += "\n";
             str += Helpers::DupStr("    ", tabIndex);
             endStmt = false;
-        } else if (t.id == "SEMICOLON") {
+        } else if (t.id == "SEMICOLON" && !forStmts) {
             str += t.value;
             endStmt = true;
         } else {
@@ -85,6 +95,8 @@ string TranslateModule::PrintBlockBody(vector<Token> tokens, int* index, int tab
                 str += "\n" + Helpers::DupStr("    ", tabIndex);
                 endStmt = false;
             }
+            if (t.id == "FOR")
+                forStmts = true;
             str += t.value + " ";
         }
         finishedBlock = false;

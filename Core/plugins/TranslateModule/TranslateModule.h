@@ -26,7 +26,7 @@ class TranslateModule : public CASP_Plugin {
         string PrintBlockBody(vector<Token>, int*, int);
 
         void ReadLanguageFile(string);
-        string Translate(Markup*);
+        void Translate(Markup*);
         Markup* MatchTargetProd(Markup*);
         Markup* TranslateProd(Markup*, Production*);
 

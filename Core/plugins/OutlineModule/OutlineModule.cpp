@@ -76,8 +76,7 @@ Outline* OutlineModule::GetFunctionOutline(Markup* functionTree) {
 }
 
 CASP_Return* OutlineModule::FormatData(vector<Outline*> outlines) {
-    CASP_Return* ret = new CASP_Return();
-    GenericObject* data = ret->Data();
+    GenericObject* data = returnData->Data();
     GenericArray* o = new GenericArray();
 
     for (int i = 0; i < outlines.size(); i++) {
@@ -91,7 +90,7 @@ CASP_Return* OutlineModule::FormatData(vector<Outline*> outlines) {
     // ret->Print();
     // cout << endl;
 
-    return ret;
+    return returnData;
 }
 
 Node* OutlineModule::stripProcess(Markup* parseTree, Outline* outline, Node* startNode, string firstEdgeData) {

@@ -184,32 +184,29 @@ LanguageDescriptorObject::LanguageDescriptorObject()
 
 }
 
-LanguageDescriptorObject::LanguageDescriptorObject(string file)
+LanguageDescriptorObject::LanguageDescriptorObject(string language)
 {
-    Parse(file);
+    Parse(language);
 }
 
 LanguageDescriptorObject::~LanguageDescriptorObject() {
     
 }
 
-void LanguageDescriptorObject::Parse(string file) {
+void LanguageDescriptorObject::Parse(string language) {
     // getpath function ?
-    FILE* temp = fopen(file.c_str(), "r");
-    if (temp == NULL) {
-        temp = fopen((CFG_DIR + file + CFG_EXT).c_str(), "r");
-        if (temp != NULL) {
-            fclose(temp);
-            file = CFG_DIR + file + CFG_EXT;
-        } else {
-            // try PATH environment variable? 
-            cout << "Cannot find language file" << endl;
-        }
-    } else {
+    string file = CFG_DIR + language + CFG_EXT;
+    FILE* temp = fopen((file).c_str(), "r");
+    if (temp != NULL) {
         fclose(temp);
+    } else {
+        // try PATH environment variable? 
+        cout << "Cannot find language file" << endl;
     }
     // return file;
     //
+    this->language = language;
+
     string data = Helpers::ReadFile(file); // TODO: file data should probably already be passed in?
     string t = data;
     ParseTerminalValues(data);
@@ -250,6 +247,10 @@ int LanguageDescriptorObject::getProdIndex(string id) {
         }
     }
     return -1;
+}
+
+string LanguageDescriptorObject::GetLanguage() {
+    return language;
 }
 
 vector<Production*> LanguageDescriptorObject::GetOrderedProductions(vector<string> stringlist) {
