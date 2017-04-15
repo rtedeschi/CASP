@@ -41,7 +41,9 @@ int Markup::NumChildren() {
     return children.size();
 }
 Markup* Markup::ChildAt(int i) {
-    return children[i];
+    if (i >= 0)
+        return children[i];
+    return children[children.size() - i];
 }
 Markup* Markup::Parent() {
     return parent;

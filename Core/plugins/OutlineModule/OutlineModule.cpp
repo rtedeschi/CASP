@@ -42,14 +42,16 @@ vector<Outline*> OutlineModule::GetAllOutlines(Markup* masterTree) {
     return outlines;
 }
 
-Outline* OutlineModule::GetRootOutline(vector<Markup*> parseTrees) {
+Outline* OutlineModule::GetRootOutline(vector<Markup*> sls) {
     string functionTitle = "ROOT";
 
     Outline* outline = new Outline();
     Node* currentNode = outline->AppendBlock(Start, functionTitle, NULL);
 
-    for (int i = 0; i < parseTrees.size(); i++) {
-        currentNode = processBlock(parseTrees[i], outline, currentNode);
+    for (int i = 0; i < sls.size(); i++) {
+        Markup* block = new Markup();
+        block->AddChild(sls[i]);
+        currentNode = processBlock(block, outline, currentNode);
     }
 
     outline->AppendBlock(End, "End " + functionTitle, currentNode);
