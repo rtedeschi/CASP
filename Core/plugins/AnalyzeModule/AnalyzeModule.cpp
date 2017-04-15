@@ -112,7 +112,7 @@ void AnalyzeModule::analyzeLoop(Markup* parseTree, AnalysisTree* analysis) {
 
     if (init != NULL || condition != NULL || increment != NULL) {
         bool prev = false;
-        blockdata += ": ";
+        blockData += ": ";
         if (init != NULL){
             blockData += init->GetData();
             prev = true;
@@ -136,8 +136,9 @@ void AnalyzeModule::analyzeLoop(Markup* parseTree, AnalysisTree* analysis) {
 
 
 }
-//moved else-if while loops
-void AnalyzeModule::processStatement(Markup* statement, AnalysisTree* analysis) {
+
+void AnalyzeModule::processStatement(Markup* statement, AnalysisTree* analysis, Node* startNode, string firstEdgeData) {
+    Node* currentNode = NULL;
     Markup* s = statement->ChildAt(0);
     string id = s->GetID();
 
@@ -165,19 +166,17 @@ void AnalyzeModule::processStatement(Markup* statement, AnalysisTree* analysis) 
 
     return currentNode;
 }
-//moved while loop here
 void AnalyzeModule::processBlock(Markup* parseTree, AnalysisTree* analysis) {
     Markup* sl = parseTree->FindFirstById("statement-list");
 
     Node* currentNode = startNode;
-    Markup* csl = parseTree->FindFirstChildById("statement-list");
     Markup* cs = NULL;
     int ct = 0;
 
-    while (csl != NULL) {
-        cs = csl->FindFirstChildById("statement");
+    while (sl != NULL) {
+        cs = sl->FindFirstChildById("statement");
         currentNode = processStatement(cs, analysis, currentNode, ct++ == 0 ? firstEdgeData : "");
-        csl = csl->FindFirstChildById("statement-list");
+        sl = sl->FindFirstChildById("statement-list");
     }
     return currentNode;
 }
