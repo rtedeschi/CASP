@@ -54,6 +54,7 @@ class LanguageDescriptorObject
         void Parse(string);
         
         string LookupTerminalValue(string);
+        bool IsTerminalIgnored(string);
         Production* findProdById(string);
         int getProdIndex(string);
         vector<Production*> GetOrderedProductions(vector<string>);
@@ -66,7 +67,9 @@ class LanguageDescriptorObject
         void ParseTerminalValues(string);
         void ParseFSM(string);
         void ParseReservedWords(string);
+        void ParseIgnores(string);
 
+        unordered_map<string, bool> ignore;
         unordered_map<string, string> terminals;
         unordered_map<string, string> reservedWords;
         vector<Production*> productions;

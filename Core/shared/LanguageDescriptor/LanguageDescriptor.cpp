@@ -23,6 +23,15 @@ string LanguageDescriptorObject::LookupTerminalValue(string terminalID) {
     return terminals[terminalID];
 };
 
+bool LanguageDescriptorObject::IsTerminalIgnored(string terminalID) {
+    try {
+        return ignore.at(terminalID);
+    } catch (...) {
+        return false;
+    }
+}
+
+
 void LanguageDescriptorObject::ParseTerminalValues(string data) {
 
     string t = string(data);
@@ -54,6 +63,20 @@ void LanguageDescriptorObject::ParseReservedWords(string data) {
     }
 }
 
+void LanguageDescriptorObject::ParseIgnores(string data) {
+
+    string t = string(data);
+    regex r = regex("Ignore\\([ \t]*(.+)[ \t]*\\)");
+    smatch matches;
+
+    while (regex_search(t, matches, r)) {
+        string terminalID = matches[1].str();
+        ignore[terminalID] = true;
+
+        t = matches.suffix().str();
+    }
+}
+
 void LanguageDescriptorObject::ParseFSM(string data) {
 
     string t = string(data);
@@ -75,6 +98,12 @@ void LanguageDescriptorObject::ParseFSM(string data) {
                         break;
                     case 't':
                         chars[index] = '\t';
+                        break;
+                    case 'r':
+                        chars[index] = '\r';
+                        break;
+                    case '0':
+                        chars[index] = '\0';
                         break;
                 }
             } else 
@@ -134,7 +163,7 @@ vector<Token> LanguageDescriptorObject::Tokenize(string input) {
         tokenData += input[i];
         if ((token = stateMachine.Transition(input[i])) != "") {
             if (token == "ERROR") {
-                if (input[i] != ' ' && input[i] != '\n' && input[i] != '\t')
+                if (input[i] != ' ' && input[i] != '\n' && input[i] != '\r' && input[i] != '\t')
                     cout << "State machine encountered an error on character '" << input[i] << "'\n";
             } else {
                 tokenData.pop_back();
@@ -142,7 +171,10 @@ vector<Token> LanguageDescriptorObject::Tokenize(string input) {
                 if (reservedWords[tokenData] != "")
                     token = reservedWords[tokenData];
                 
-                tokens.push_back(Token(token, tokenData));
+                if (!IsTerminalIgnored(token))
+                    tokens.push_back(Token(token, tokenData));
+                else
+                    cout << "Ignoring terminal " << token << ", value = \"" << tokenData << "\"" << endl;
                 i--;
             }
             tokenData = "";
@@ -158,7 +190,10 @@ vector<Token> LanguageDescriptorObject::Tokenize(string input) {
             if (reservedWords[tokenData] != "")
                 token = reservedWords[tokenData];
             
-            tokens.push_back(Token(token, tokenData));
+            if (!IsTerminalIgnored(token))
+                tokens.push_back(Token(token, tokenData));
+            else
+                cout << "Ignoring terminal " << token << ", value = \"" << tokenData << "\"" << endl;
         }
     }
     stateMachine.Reset();
@@ -223,6 +258,7 @@ void LanguageDescriptorObject::Parse(string language) {
     ParseTerminalValues(data);
     ParseFSM(data);
     ParseReservedWords(data);
+    ParseIgnores(data);
     
     regex r = regex("(.+?)\\s*=:\\s*([^]+?)\\n\\n");
     smatch matches;
