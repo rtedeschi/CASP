@@ -77,13 +77,16 @@ void AnalyzeModule::analyzeMethodCall(Markup* parseTree, AnalysisTree* analysis)
 
     analysis->AddChild(node);
 }
+
 void AnalyzeModule::analyzeDecision(Markup* parseTree, AnalysisTree* analysis) {
 
     AnalysisTree* node = new AnalysisTree();
     analysis->AddChild(node);
+    
 
     // todo
 }
+
 void AnalyzeModule::analyzeProcess(Markup* parseTree, AnalysisTree* analysis) {
 
     AnalysisNode* node = new AnalysisNode();
