@@ -83,8 +83,12 @@ void AnalyzeModule::analyzeDecision(Markup* parseTree, AnalysisTree* analysis) {
     AnalysisTree* node = new AnalysisTree();
     analysis->AddChild(node);
     
+    // analyze each block, add worst-case block to analysis
 
-    // todo
+    /* each block in tree stored as a list nlogn would be push as n,logn 
+    *
+    *
+    */
 }
 
 void AnalyzeModule::analyzeProcess(Markup* parseTree, AnalysisTree* analysis) {
@@ -100,30 +104,24 @@ void AnalyzeModule::analyzeProcess(Markup* parseTree, AnalysisTree* analysis) {
 }
 void AnalyzeModule::analyzeLoop(Markup* parseTree, AnalysisTree* analysis) {
 
-    Markup* init = parseTree->FindFirstChildById("for-init")->ChilAt(0);
-    Markup* condition = parseTree->FindFirstChildById("for-condition");
-    Markup* increment = parseTree->FindFirstChildById("for-increment");
+    Markup* init = parseTree->FindFirstChildById("for-init")->ChildAt(0);
+    Markup* condition = parseTree->FindFirstChildById("for-condition")->ChildAt(0);
+    Markup* increment = parseTree->FindFirstChildById("for-increment")->ChildAt(0);
     Markup* body = parseTree->FindFirstChildById("for-body");
     Markup* proc = NULL;
-    string blockData = "Loop";
 
     AnalysisTree* tree = new AnalysisTree();
     analysis->AddChild(tree);
 
     if (init != NULL || condition != NULL || increment != NULL) {
-        bool prev = false;
-        blockData += ": ";
         if (init != NULL){
-            blockData += init->GetData();
-            prev = true;
+            // Get initial condition
         }
         if(condition != NULL){
-            blockData += condition->GetData();
-            prev = true;
+            // Get final condition
         }
         if(increment != NULL){
-            blockData += increment->GetData();
-            prev = true;
+            // get increment
         }
 
     }
@@ -137,8 +135,7 @@ void AnalyzeModule::analyzeLoop(Markup* parseTree, AnalysisTree* analysis) {
 
 }
 
-void AnalyzeModule::processStatement(Markup* statement, AnalysisTree* analysis, Node* startNode, string firstEdgeData) {
-    Node* currentNode = NULL;
+void AnalyzeModule::processStatement(Markup* statement, AnalysisTree* analysis) {
     Markup* s = statement->ChildAt(0);
     string id = s->GetID();
 
@@ -156,29 +153,25 @@ void AnalyzeModule::processStatement(Markup* statement, AnalysisTree* analysis, 
             id = s->GetID();
         }
 
-        if (id == "method-invokation") {
-            currentNode = stripMethodCall(s, analysis, startNode, firstEdgeData);
+        if (id == "method-invocation") {
+            analyzeMethodCall(s, analysis);
         }
         else {
-            currentNode = stripProcess(s, analysis, startNode, firstEdgeData);
+            analyzeProcess(s, analysis);
         }
     }
-
-    return currentNode;
 }
 void AnalyzeModule::processBlock(Markup* parseTree, AnalysisTree* analysis) {
     Markup* sl = parseTree->FindFirstById("statement-list");
 
-    Node* currentNode = startNode;
     Markup* cs = NULL;
     int ct = 0;
 
     while (sl != NULL) {
         cs = sl->FindFirstChildById("statement");
-        currentNode = processStatement(cs, analysis, currentNode, ct++ == 0 ? firstEdgeData : "");
+        processStatement(cs, analysis);
         sl = sl->FindFirstChildById("statement-list");
     }
-    return currentNode;
 }
 
 AnalysisTree::AnalysisTree() {
