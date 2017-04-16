@@ -617,8 +617,8 @@ TokenMatch* ProductionSet::MatchAlternation(vector<Token> tokens, int startIndex
             if (alternationMatch->length > 0) {
                 i += alternationMatch->length;
                 match->submatches.push_back(alternationMatch);
+                break;
             }
-            break;
         }
     }
 
