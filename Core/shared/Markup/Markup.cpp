@@ -63,6 +63,19 @@ string Markup::GetData() {
     }
 }
 
+vector<Markup*> Markup::RecursiveElements() {
+
+    Markup* rm = this;
+    vector<Markup*> recursives;
+
+    while (rm != NULL) {
+        recursives.push_back(rm);
+        rm = rm->FindFirstChildById(id);
+    }
+
+    return recursives;
+}
+
 string Markup::GetID() {
     return id;
 }

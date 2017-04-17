@@ -63,7 +63,12 @@ Outline* OutlineModule::GetFunctionOutline(Markup* functionTree) {
     Markup* declarationList = functionTree->FindFirstChildById("function-parameters")->FindFirstChildById("function-parameter-list");
     string startText = functionTitle;
     if (declarationList != NULL) {
-        startText += ": " + declarationList->GetData();
+        startText += ": ";// + declarationList->GetData();
+        vector<Markup*> dls = declarationList->FindAllById("function-parameter-declaration", false);
+        for (int i = 0; i < dls.size(); i++) {
+            startText += "\n" + dls[i]->GetData();
+        }
+
     }
 
     Outline* outline = new Outline();
@@ -270,7 +275,7 @@ Node* OutlineModule::processStatement(Markup* statement, Outline* outline, Node*
             id = s->GetID();
         }
 
-        if (id == "method-invokation") {
+        if (id == "method-invocation") {
             currentNode = stripMethodCall(s, outline, startNode, firstEdgeData);
         }
         else {

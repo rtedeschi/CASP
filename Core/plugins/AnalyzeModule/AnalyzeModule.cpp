@@ -82,12 +82,9 @@ void AnalyzeModule::analyzeDecision(Markup* parseTree, AnalysisTree* analysis) {
 
     AnalysisTree* node = new AnalysisTree();
     analysis->AddChild(node);
-    
     // analyze each block, add worst-case block to analysis
 
     /* each block in tree stored as a list nlogn would be push as n,logn 
-    *
-    *
     */
 }
 
@@ -113,15 +110,105 @@ void AnalyzeModule::analyzeLoop(Markup* parseTree, AnalysisTree* analysis) {
     AnalysisTree* tree = new AnalysisTree();
     analysis->AddChild(tree);
 
+    string id;
+    bool hasInit = false;
+    int initVal = 0;
+    bool hasCondition = false;
+    int term = 0;
+    bool hasIncrement = false;
+    int incr = 0;
+
     if (init != NULL || condition != NULL || increment != NULL) {
         if (init != NULL){
             // Get initial condition
+            Markup* assign = init->FindFirstById("assignment-tail");
+            if (assign != NULL) {
+                Markup* identifier = init->FindFirstById("identifier"); // could be float literal?
+                id = identifier->GetData();
+                Markup* lit = assign->FindFirstById("INT_LITERAL"); // could be float literal or id?
+                if (lit != NULL) {
+                    hasInit = true;
+                    initVal = stoi(lit->GetData());
+                } else {
+                    // An appropriate literal was not found. Could be an expression. Calculate?
+                }
+            } else{
+                // there is no definition here, look for it elsewhere based on the condition/increment?
+            }
+
+            cout << id << " = " << initVal << endl;
         }
         if(condition != NULL){
             // Get final condition
+            Markup* operation = condition->FindFirstById("relational-expression");
+            if (operation != NULL){
+                Markup* op = operation->FindFirstChildById("relational-binary-op");
+                Markup* identifier = operation->FindFirstChildById("identifier"); // could be float literal?
+                id = identifier->GetData();
+                Markup* lit = operation->FindFirstById("INT_LITERAL"); // could be float literal or id?
+                // assume identifier is on left, value is on right
+                if (identifier != NULL && lit != NULL && (id == identifier->GetData())){
+                    string opType = op->ChildAt(0)->GetID();
+                    if (opType == "LT") {
+
+                    } else if (opType == "LT_EQ"){
+                        
+                    } else if (opType == "GT") {
+
+                    } else if (opType == "GT_EQ"){
+                        
+                    } else if (opType == "EQ") {
+                        // requires extra calculation. Ignore for now?
+                    } else if (opType == "NOT_EQ") {
+                        // requires extra calculation. Ignore for now?
+                    }
+
+                } else {
+                    // an appropriate expression could not be found
+                }
+
+            } else {
+                // no relational condition. Can't calculate?
+            }
         }
         if(increment != NULL){
             // get increment
+            Markup* operation = increment->FindFirstById("algebraic-expression");
+            if(operation != NULL){
+                Markup* op = operation->FindFirstChildById("math-binary-op");
+                Markup* identifier = operation->FindFirstChildById("identifier");
+                id = identifier->GetData();
+                if(identifier != NULL && op != NULL){
+                    string opType = op->ChildAt(0)->GetID();
+                    hasIncrement = true;
+                    if(opType == "INCR"){
+
+                        
+
+                    } else if(opType == "DECR"){
+
+
+                    }
+
+
+
+                }
+            }else {
+                //get unary operation 
+                Markup* op = operation-> FindFirstById("unary-expression");
+                Markup* identifier = operation->FindFirstChildById("identifier");
+                if(op != NULL){
+                    Markup* post = op->FindFirstChildById("unary-postfix-expression");
+                    Markup* pre = op->FindFirstChildById("unary-prefix-expression");
+                    if(post != NULL || pre != NULL){
+
+                    }
+
+                } else{
+                    //nothing
+
+                }
+            }
         }
 
     }
