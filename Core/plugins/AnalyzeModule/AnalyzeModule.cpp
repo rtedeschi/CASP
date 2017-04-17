@@ -86,6 +86,46 @@ void AnalyzeModule::analyzeDecision(Markup* parseTree, AnalysisTree* analysis) {
 
     /* each block in tree stored as a list nlogn would be push as n,logn 
     */
+    
+    Markup* condition = parseTree->FindFirstChildById("expression");
+    Markup* body = parseTree->FindFirstChildById("decision-body");
+    Markup* proc;
+    vector<Markup*> decisionCases = parseTree->FindFirstChildById("decision-cases")->RecursiveElements();
+    Markup* fallback = parseTree->FindFirstChildById("decision-fallback");
+
+    // process if expression here, too
+    if ((proc = body->FindFirstChildById("block")) != NULL) {
+        processBlock(proc, node);
+    }
+    else if ((proc = body->FindFirstChildById("statement")) != NULL) {
+        processStatement(proc, node);
+    }
+
+    for (int i = 0; i < decisionCases.size(); i++) {
+        // create a new tree node and append it to the current tree?
+        // process else-if expression here, too
+        condition = decisionCases[i]->FindFirstChildById("expression");
+        body = decisionCases[i]->FindFirstChildById("decision-body");
+
+        if ((proc = body->FindFirstChildById("block")) != NULL) {
+            processBlock(proc, node);
+        }
+        else if ((proc = body->FindFirstChildById("statement")) != NULL) {
+            processStatement(proc, node);
+        }
+    }
+
+    if (fallback != NULL) {
+        // create a new tree node and append it to the current tree?
+        body = fallback->FindFirstChildById("decision-body");
+        if ((proc = body->FindFirstChildById("block")) != NULL) {
+            processBlock(proc, node);
+        }
+        else if ((proc = body->FindFirstChildById("statement")) != NULL) {
+            processStatement(proc, node);
+        }
+    }
+
 }
 
 void AnalyzeModule::analyzeProcess(Markup* parseTree, AnalysisTree* analysis) {
