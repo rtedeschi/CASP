@@ -124,7 +124,7 @@ vector<Markup*> Markup::FindAllById(string id, bool findChildrenOfMatches) {
     if (this->id != id || findChildrenOfMatches) {
         for (int i = 0; i < children.size(); i++) {
             vector<Markup*> v = children[i]->FindAllById(id, findChildrenOfMatches);
-            results.insert(results.end(), v.begin(), v.end());
+            results = Helpers::concat(results, v);
         }
     }
 
@@ -152,4 +152,66 @@ vector<Markup*> Markup::FindAllChildrenById(string id) {
     }
 
     return results;
+}
+
+Markup* Markup::FindFirstTerminalByVal(string id, string val) {
+    Markup* result = NULL;
+    if (this->IsLeaf()) {
+        if (this->id == id && this->data == val)
+            result = this;
+    } else {
+        for (int i = 0; i < children.size() && result == NULL; i++) {
+            result = children[i]->FindFirstTerminalByVal(id, val);
+        }
+    }
+    return result;
+}
+Markup* Markup::FindFirstTerminalByVal(string val) {
+    Markup* result = NULL;
+    if (this->IsLeaf()) {
+        if (this->data == val)
+            result = this;
+    } else {
+        for (int i = 0; i < children.size() && result == NULL; i++) {
+            result = children[i]->FindFirstTerminalByVal(val);
+        }
+    }
+    return result;
+}
+vector<Markup*> Markup::FindAllTerminalsByVal(string id, string val) {
+    vector<Markup*> results;
+    if (this->IsLeaf()) {
+        if (this->id == id && this->data == val)
+            results.push_back(this);
+    } else {
+        for (int i = 0; i < children.size(); i++) {
+            vector<Markup*> v = children[i]->FindAllTerminalsByVal(val);
+            results = Helpers::concat(results, v);
+        }
+    }
+    return results;
+}
+vector<Markup*> Markup::FindAllTerminalsByVal(string val) {
+    vector<Markup*> results;
+    if (this->IsLeaf()) {
+        if (this->data == val)
+            results.push_back(this);
+    } else {
+        for (int i = 0; i < children.size(); i++) {
+            vector<Markup*> v = children[i]->FindAllTerminalsByVal(val);
+            results = Helpers::concat(results, v);
+        }
+    }
+    return results;
+}
+
+Markup* Markup::FindAncestorById(string id) {
+    Markup* result = NULL;
+    if (parent != NULL) {
+        if (parent->id == id)
+            result = parent;
+        else
+            result = parent->FindAncestorById(id);
+    }
+    return result;
 }

@@ -35,6 +35,12 @@ namespace Helpers {
 
     string toLower(string);
     string toUpper(string);
+
+    template<typename T>
+    vector<T> concat(vector<T> source, vector<T> addition) {
+        source.insert(source.end(), addition.begin(), addition.end());
+        return source;
+    };
 };
 
 template<class T>

@@ -85,6 +85,26 @@ class Markup : public Printable
         vector<Markup*> FindAllById(string id, bool findChildrenOfMatches);
 
         /*
+            Finds the first matching terminal by value, null if no match
+            id - optional terminal ID
+            val - value to match
+        */
+        Markup* FindFirstTerminalByVal(string id, string val);
+        Markup* FindFirstTerminalByVal(string val);
+        /*
+            Finds all matching terminals by value
+            id - optional terminal ID
+            val - value to match
+        */
+        vector<Markup*> FindAllTerminalsByVal(string id, string val);
+        vector<Markup*> FindAllTerminalsByVal(string val);
+        /*
+            Finds the first matching ancestor by ID, NULL if no match
+            id - ID to match
+        */
+        Markup* FindAncestorById(string id);
+
+        /*
             Retrieves the parent of the node (NULL if none)
         */
         Markup* Parent();
