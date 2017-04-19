@@ -18,6 +18,16 @@ namespace CASP_Standalone_Implementation.Src
         public static string FunctionArgument = "args";
         public static string SourceLanguage = "sourcelang";
 
+        static long lastRunTime = 0;
+
+        public static long LastRunTime
+        {
+            get
+            {
+                return lastRunTime;
+            }
+        }
+
         public static string GenerateRequest(params string[] data)
         {
             string ret = "";
@@ -37,6 +47,7 @@ namespace CASP_Standalone_Implementation.Src
 
         public static async Task<string> Execute(string request)
         {
+            Stopwatch timer = new Stopwatch();
             return await Task.Run(() =>
             {
                 Process p = new Process();
@@ -46,10 +57,15 @@ namespace CASP_Standalone_Implementation.Src
                 p.StartInfo.WorkingDirectory = CORE_DIR;
                 p.StartInfo.FileName = CORE_DIR + "/CASP.exe";
                 p.StartInfo.Arguments = request;
-                p.Start();
 
+                timer.Start();
+
+                p.Start();
                 string output = p.StandardOutput.ReadToEnd();
                 p.WaitForExit();
+
+                timer.Stop();
+                lastRunTime = timer.ElapsedMilliseconds;
 
                 return output;
             });

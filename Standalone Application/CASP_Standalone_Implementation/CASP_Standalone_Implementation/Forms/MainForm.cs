@@ -44,8 +44,6 @@ namespace CASP_Standalone_Implementation
         {
             try
             {
-
-
                 string module = ConsoleWrapper.GetArgument(ConsoleWrapper.ModuleId, ModuleCombo.SelectedItem.ToString());
                 string srclang = ConsoleWrapper.GetArgument(ConsoleWrapper.SourceLanguage, InputLanguageCombo.SelectedItem.ToString());
                 string code = ConsoleWrapper.GetArgument(ConsoleWrapper.CodeFile, TempFilename);
@@ -74,7 +72,7 @@ namespace CASP_Standalone_Implementation
             ExecuteButton.Enabled = false;
             ProgramStatus.Text = "Processing...";
             string output = await ConsoleWrapper.Execute(request);
-            ProgramStatus.Text = "Ready";
+            ProgramStatus.Text = "Ready (" + ((float)ConsoleWrapper.LastRunTime / 1000f) + "s)";
             ExecuteButton.Enabled = true;
 
             if (ShowOutputCheckbox.Checked)
