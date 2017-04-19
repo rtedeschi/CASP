@@ -6,7 +6,8 @@ string EntryTypes[] = { "Start", "MethodCall", "Process", "Loop", "Decision", "E
 
 OutlineModule::OutlineModule() {}
 
-CASP_Return* OutlineModule::Execute(Markup* markup, LanguageDescriptorObject* source_ldo, vector<arg> fnArgs) {
+CASP_Return* OutlineModule::Execute(Markup* markup, LanguageDescriptorObject* source_ldo, vector<arg> fnArgs, CASP_Return* inputReturn) {
+    returnData = (inputReturn != NULL ? inputReturn : new CASP_Return());
 
     /*
         This module hasn't implemented any Function Args yet!
@@ -108,7 +109,7 @@ Node* OutlineModule::stripProcess(Markup* parseTree, Outline* outline, Node* sta
     bool sameType = currentNode->data.find(type + ":") == 0;
 
     if (!sameType) {
-        currentNode = outline->AppendBlock(Process, type + ":\n\t" + parseTree->GetData(), currentNode);
+        currentNode = outline->AppendBlock(Process, type + ":\n\t" + parseTree->GetData(), currentNode, firstEdgeData);
     } else {
         currentNode->data += "\n\t" + parseTree->GetData();
     }
@@ -352,9 +353,9 @@ GenericObject* Node::Output() {
     GenericObject* ob = new GenericObject();
     GenericArray* arr = new GenericArray();
 
-    ob->Add("id", new GenericLeaf<int>(id));
-    ob->Add("data", new GenericLeaf<string>("\"" + data + "\""));
-    ob->Add("type", new GenericLeaf<string>("\"" + EntryTypes[type] + "\""));
+    ob->Add("id", CreateLeaf(id));
+    ob->Add("data", CreateLeaf(data));
+    ob->Add("type", CreateLeaf(EntryTypes[type]));
 
     for (int i = 0; i < edges.size(); i++) {
         arr->Add(edges[i]->Output());
@@ -429,9 +430,9 @@ Edge::Edge(Node* source, Node* target, string data) {
 GenericObject* Edge::Output() {
     GenericObject* ob = new GenericObject();
 
-    ob->Add("data", new GenericLeaf<string>("\"" + data + "\""));
-    ob->Add("source", new GenericLeaf<int>(source->id));
-    ob->Add("target", new GenericLeaf<int>(target->id));
+    ob->Add("data", CreateLeaf(data));
+    ob->Add("source", CreateLeaf(source->id));
+    ob->Add("target", CreateLeaf(target->id));
 
     return ob;
 }

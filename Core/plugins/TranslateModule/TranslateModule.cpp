@@ -4,15 +4,35 @@ static string _TranslateModule = RegisterPlugin("Translate", new TranslateModule
 
 TranslateModule::TranslateModule() {}
 
-CASP_Return* TranslateModule::Execute(Markup* markup, LanguageDescriptorObject* source_ldo, vector<arg> fnArgs) {
+CASP_Return* TranslateModule::Execute(Markup* markup, LanguageDescriptorObject* source_ldo, vector<arg> fnArgs, CASP_Return* inputReturn) {
+    returnData = (inputReturn != NULL ? inputReturn : new CASP_Return());
 
-    cout << "This is the entry point for the " << _TranslateModule << " Module!\n";
+    // cout << "This is the entry point for the " << _TranslateModule << " Module!\n";
 
+    bool languageRead = true;
     this->source_ldo = source_ldo;
     string targetLanguage = Helpers::ParseArgument("targetlang", fnArgs);
-    ReadLanguageFile(targetLanguage);
 
-    Translate(markup);
+    if (targetLanguage != "") {
+    
+        try {
+            ReadLanguageFile(targetLanguage);
+        } catch (...) {
+            returnData->AddStandardError("Language '" + targetLanguage + "' could not be read. Could not proceed with translation.");
+            languageRead = false;
+        }
+
+        if (languageRead) {
+            try {
+                Translate(markup);
+            } catch (...) {
+                returnData->AddStandardError("Error while processing translation.");
+            }
+        }
+
+    } else {
+        returnData->AddStandardError("Target language not provided. Make sure to use argument 'targetlang'.");
+    }
 
     return returnData;
 
@@ -25,7 +45,9 @@ void TranslateModule::Translate(Markup* markup) {
 
     vector<Markup*> children = markup->Children();
     for (int i = 0; i < children.size(); i++) {
-        targetRoot->AddChild(MatchTargetProd(children[i]));
+        Markup* c = MatchTargetProd(children[i]);
+        if (c != NULL)
+            targetRoot->AddChild(c);
     }
 
     // markup->Print();
@@ -118,16 +140,17 @@ Markup* TranslateModule::MatchTargetProd(Markup* markup) {
         } else {
             Markup* ret = new Markup(nodeId);
             Markup* t = NULL;
-            // returnData->AddStandardWarning("No matching translation for terminal '" + nodeId + "'");
+            returnData->AddStandardWarning("No matching translation for construct '" + nodeId + "'");
             // add warning that this node could not be translated
-            vector<Markup*> children = markup->Children();
-            for (int i = 0; i < children.size(); i++) {
-                t = MatchTargetProd(children[i]);
-                if (t != NULL) {
-                    ret->AddChild(t);
-                }
-            }
-            return ret;
+            // vector<Markup*> children = markup->Children();
+            // for (int i = 0; i < children.size(); i++) {
+            //     t = MatchTargetProd(children[i]);
+            //     if (t != NULL) {
+            //         ret->AddChild(t);
+            //     }
+            // }
+            // return ret;
+            return NULL;
         }
     } else {
         string nodeValue = markup->GetData();
@@ -137,14 +160,14 @@ Markup* TranslateModule::MatchTargetProd(Markup* markup) {
             if (newTerminal != "") {
                 return new Markup(nodeId, newTerminal);
             } else {
-                // returnData->AddStandardWarning("No translation for node '" + nodeId + "'");
+                returnData->AddStandardWarning("No translation for terminal '" + nodeId + "'");
                 // add warning that there is no translation
-                return new Markup(nodeId, nodeValue);
+                return NULL;//new Markup(nodeId, nodeValue);
             }
         } else {
-            // returnData->AddStandardWarning("No translation for node '" + nodeId + "'");
+            returnData->AddStandardWarning("No translation for terminal '" + nodeId + "'");
             // add warning that this cannot be translated
-            return new Markup(nodeId, nodeValue);
+            return NULL;// new Markup(nodeId, nodeValue);
         }
 
     }
@@ -246,12 +269,6 @@ Markup* TranslateModule::HandleAlternation(Markup* source, ProductionSet* set) {
 
 
 void TranslateModule::ReadLanguageFile(string targetLanguage) {
-    try {
-        // read and parse file;
-        target_ldo = new LanguageDescriptorObject(targetLanguage);
-    } catch (...) {
-        string err = "Language '" + targetLanguage + "' could not be read";
-        cout << err << endl;
-        throw err;
-    }
+    // read and parse file;
+    target_ldo = new LanguageDescriptorObject(targetLanguage);
 }

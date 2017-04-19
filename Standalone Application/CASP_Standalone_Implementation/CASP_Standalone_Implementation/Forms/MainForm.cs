@@ -90,6 +90,12 @@ namespace CASP_Standalone_Implementation
                 CASP_OutputForm form = (CASP_OutputForm)Activator.CreateInstance(T);
                 form.Show();
                 form.Set_CASP_Output(response);
+
+                ErrorProviderForm errorProvider = new ErrorProviderForm(response);
+                if (errorProvider.NumErrors > 0 || errorProvider.NumWarnings > 0)
+                    errorProvider.Show();
+                else
+                    errorProvider.Dispose();
             }
 
             File.Delete(filename);

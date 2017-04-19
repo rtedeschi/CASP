@@ -247,7 +247,7 @@ void LanguageDescriptorObject::Parse(string language) {
         fclose(temp);
     } else {
         // try PATH environment variable? 
-        cout << "Cannot find language file" << endl;
+        throw "Cannot find language file.";
     }
     // return file;
     //

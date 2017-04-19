@@ -1,4 +1,13 @@
-int outline_example(int a, bool b) {
+#include "string"
+
+using namespace std;
+
+void display(string);
+void negative(int i);
+void positive(int i);
+void say_something(string = "Hi");
+
+int main(int a, bool b) {
 
     int c = a + b;
 
@@ -7,28 +16,43 @@ int outline_example(int a, bool b) {
     for (int i = 0; i < 10; i++) {
         
         c = c + i;
+        display("" + c);
 
     }
 
-    display(c);
-    display(a);
-    display(b);
+    display("Value: " + c);
+    display("" + a);
+    display("" + b);
 
     if (d) {
-        do_this();
+        display("" + d);
+    } else {
+
+        if (a < 0)
+            negative(a);
+        else if (a > 0)
+            positive(a);
+        else
+            say_something();
+
     }
 
-    if (!d)
-        do_this();
-    else if (c)
-        do_that();
-    else
-        noop();
+    return 0;
     
 }
 
-int display() {
+void display(string s) {
+    do_something_with_input(s);
+}
 
-    do_something_with_input(a);
+void negative(int i) {
+    display("" + (i * -1));
+}
 
+void positive(int i) {
+    display("" + i);
+}
+
+void say_something(string s) {
+    display(s);
 }

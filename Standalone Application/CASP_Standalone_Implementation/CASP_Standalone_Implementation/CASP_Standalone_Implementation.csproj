@@ -80,6 +80,12 @@
     <Compile Include="Forms\MainForm.Designer.cs">
       <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\ErrorProviderForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\ErrorProviderForm.Designer.cs">
+      <DependentUpon>ErrorProviderForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Forms\OutputForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -107,6 +113,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\ErrorProviderForm.resx">
+      <DependentUpon>ErrorProviderForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\OutputForm.resx">
       <DependentUpon>OutputForm.cs</DependentUpon>
