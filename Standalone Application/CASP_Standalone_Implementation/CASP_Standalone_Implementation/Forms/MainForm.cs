@@ -87,9 +87,16 @@ namespace CASP_Standalone_Implementation
                 string jsonString = reg.Match(output).Groups[1].Value.Trim();
                 JObject response = JsonConvert.DeserializeObject<JObject>(jsonString);
 
-                CASP_OutputForm form = (CASP_OutputForm)Activator.CreateInstance(T);
-                form.Show();
-                form.Set_CASP_Output(response);
+                if (response != null)
+                {
+                    CASP_OutputForm form = (CASP_OutputForm)Activator.CreateInstance(T);
+                    form.Show();
+                    form.Set_CASP_Output(response);
+                }
+                else
+                {
+                    response = JsonConvert.DeserializeObject<JObject>("{ \"Data\": {}, \"Warnings\": [], \"Errors\": [ { \"id\": -1, \"message\": \"CASP produced no valid output.\" } ] }");
+                }
 
                 ErrorProviderForm errorProvider = new ErrorProviderForm(response);
                 if (errorProvider.NumErrors > 0 || errorProvider.NumWarnings > 0)

@@ -200,7 +200,7 @@ Node* OutlineModule::stripDecision(Markup* parseTree, Outline* outline, Node* st
 
     return outline->AppendBlock(endDecision);
 }
-Node* OutlineModule::stripLoop(Markup* parseTree, Outline* outline, Node* startNode, string firstEdgeData) {
+Node* OutlineModule::stripFor(Markup* parseTree, Outline* outline, Node* startNode, string firstEdgeData) {
 
     Markup* init = parseTree->FindFirstChildById("for-init")->ChildAt(0);
     Markup* condition = parseTree->FindFirstChildById("for-condition")->ChildAt(0);
@@ -244,6 +244,36 @@ Node* OutlineModule::stripLoop(Markup* parseTree, Outline* outline, Node* startN
 
     return startNode;
 }
+Node* OutlineModule::stripWhile(Markup* parseTree, Outline* outline, Node* startNode, string firstEdgeData) {
+
+    bool isDoWhile = parseTree->FindFirstChildById("DO") != NULL;
+    Markup* condition = parseTree->FindFirstChildById("while-condition")->ChildAt(0);
+    Markup* body = parseTree->FindFirstChildById("while-body");
+    Markup* proc = NULL;
+    string blockData = "Loop";
+
+    if (condition != NULL) {
+        blockData += "\n" + condition->GetData() + "?";
+    } else {
+        blockData += "\n(no condition)";
+    }
+
+    Node* currentNode = startNode = 
+        outline->AppendBlock(Decision, blockData, startNode, firstEdgeData);
+
+    if ((proc = body->FindFirstChildById("block")) != NULL) {
+        currentNode = processBlock(proc, outline, startNode, "Loop Iteration");
+        currentNode->AddEdgeTo(startNode);
+    } else if ((proc = body->FindFirstChildById("statement")) != NULL) {
+        currentNode = processStatement(proc, outline, startNode, "Loop Iteration");
+        currentNode->AddEdgeTo(startNode);
+    } else {
+        currentNode->AddEdgeTo(currentNode, "Loop Iteration");
+    }
+
+    return startNode;
+}
+
 Node* OutlineModule::processBlock(Markup* parseTree, Outline* outline, Node* startNode, string firstEdgeData) {
     Node* currentNode = startNode;
     Markup* csl = parseTree->FindFirstChildById("statement-list");
@@ -263,7 +293,10 @@ Node* OutlineModule::processStatement(Markup* statement, Outline* outline, Node*
     string id = s->GetID();
 
     if (id == "for-loop") {
-        currentNode = stripLoop(s, outline, startNode, firstEdgeData);
+        currentNode = stripFor(s, outline, startNode, firstEdgeData);
+    } 
+    else if (id == "while-loop" || id == "do-while-loop") {
+        currentNode = stripWhile(s, outline, startNode, firstEdgeData);
     } else if (id == "decision") {
         currentNode = stripDecision(s, outline, startNode, firstEdgeData);
     } else if (id == "block") {

@@ -36,7 +36,8 @@ class OutlineModule : public CASP_Plugin {
         Node* stripProcess(Markup*, Outline*, Node*, string = "");
         Node* stripMethodCall(Markup*, Outline*, Node*, string = "");
         Node* stripDecision(Markup*, Outline*, Node*, string = "");
-        Node* stripLoop(Markup*, Outline*, Node*, string = "");
+        Node* stripFor(Markup*, Outline*, Node*, string = "");
+        Node* stripWhile(Markup*, Outline*, Node*, string = "");
         Node* processStatement(Markup*, Outline*, Node*, string = "");
         Node* processBlock(Markup*, Outline*, Node*, string = "");
 };

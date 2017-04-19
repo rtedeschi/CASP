@@ -15,7 +15,7 @@ int main(int a, bool b) {
 
     for (int i = 0; i < 10; i++) {
         
-        c = c + i;
+        c = c + i->n;
         display("" + c);
 
     }
