@@ -26,6 +26,7 @@ Markup::~Markup() {
 
 void Markup::AddChild(Markup* c) {
     c->parent = this;
+    c->index = children.size();
     children.push_back(c);
 }
 
@@ -33,6 +34,7 @@ void Markup::AddChildren(vector<Markup*> list) {
     for (int i = 0; i < list.size(); i++) {
         Markup* c = list[i];
         c->parent = this;
+        c->index = children.size();
         children.push_back(c);
     }
 }
@@ -41,9 +43,14 @@ int Markup::NumChildren() {
     return children.size();
 }
 Markup* Markup::ChildAt(int i) {
-    if (i >= 0)
-        return children[i];
-    return children[children.size() - i];
+    if (i >= 0) {
+        if (i < children.size())
+            return children[i];
+    } else {
+        if (children.size() + i >= 0);
+            return children[children.size() + i];
+    }
+    return NULL;
 }
 Markup* Markup::Parent() {
     return parent;
@@ -214,4 +221,76 @@ Markup* Markup::FindAncestorById(string id) {
             result = parent->FindAncestorById(id);
     }
     return result;
+}
+
+unordered_map<string, string> Markup::AccessibleDeclarations() {
+    unordered_map<string, string> declarations;
+
+    // try to get any global declarations
+    Markup* statementAncestor = FindAncestorById("statement");
+    if (statementAncestor != NULL) {
+        unordered_map<string, string> parentDecl = statementAncestor->AccessibleDeclarations();
+        for ( auto it = parentDecl.begin(); it != parentDecl.end(); ++it )
+            declarations[it->first] = it->second;
+    }
+    
+    Markup* fnAncestor = FindAncestorById("function-definition");
+    if (fnAncestor != NULL) {
+        unordered_map<string, string> parentDecl = fnAncestor->AccessibleDeclarations();
+        for ( auto it = parentDecl.begin(); it != parentDecl.end(); ++it )
+            declarations[it->first] = it->second;
+    }
+
+    // try to get previous sibling declarations
+    if (parent != NULL) {
+        for (int i = 0; i < index; i++) {
+            unordered_map<string, string> sibDecl = parent->ChildAt(i)->AccessibleDeclarations();
+            for ( auto it = sibDecl.begin(); it != sibDecl.end(); ++it )
+                declarations[it->first] = it->second;
+        }
+    }
+
+    // add any local declarations
+    for ( auto it = localDeclarations.begin(); it != localDeclarations.end(); ++it )
+        declarations[it->first] = it->second;
+
+    return declarations;
+}
+
+unordered_map<string, Markup*> Markup::AccessibleValues() {
+    unordered_map<string, Markup*> values;
+
+    // try to get any global values
+    Markup* statementAncestor = FindAncestorById("statement");
+    if (statementAncestor != NULL) {
+        unordered_map<string, Markup*> parentDecl = statementAncestor->AccessibleValues();
+        for ( auto it = parentDecl.begin(); it != parentDecl.end(); ++it )
+            values[it->first] = it->second;
+    }
+
+    Markup* fnAncestor = FindAncestorById("function-definition");
+    if (fnAncestor != NULL) {
+        unordered_map<string, Markup*> parentDecl = fnAncestor->AccessibleValues();
+        for ( auto it = parentDecl.begin(); it != parentDecl.end(); ++it )
+            values[it->first] = it->second;
+    }
+
+    // try to get previous sibling values
+    if (parent != NULL) {
+        for (int i = 0; i < index; i++) {
+            unordered_map<string, Markup*> sibDecl = parent->ChildAt(i)->AccessibleValues();
+            for ( auto it = sibDecl.begin(); it != sibDecl.end(); ++it )
+                values[it->first] = it->second;
+        }
+    }
+
+    // add any local values
+    for ( auto it = localValues.begin(); it != localValues.end(); ++it )
+        values[it->first] = it->second;
+
+    return values;
+}
+
+int Markup::IndexInParent() {
+    return index;
 }
