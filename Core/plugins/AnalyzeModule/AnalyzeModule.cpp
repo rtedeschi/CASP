@@ -104,8 +104,9 @@ void AnalyzeModule::analyzeDecision(Markup* parseTree, AnalysisTree* analysis) {
     for (int i = 0; i < decisionCases.size(); i++) {
         // create a new tree node and append it to the current tree?
         // process else-if expression here, too
-        condition = decisionCases[i]->FindFirstChildById("expression");
-        body = decisionCases[i]->FindFirstChildById("decision-body");
+        Markup* dc = decisionCases[i]->FindFirstChildById("decision-case");
+        condition = dc->FindFirstChildById("expression");
+        body = dc->FindFirstChildById("decision-body");
 
         if ((proc = body->FindFirstChildById("block")) != NULL) {
             processBlock(proc, node);
@@ -190,13 +191,13 @@ void AnalyzeModule::analyzeLoop(Markup* parseTree, AnalysisTree* analysis) {
                 if (identifier != NULL && lit != NULL && (id == identifier->GetData())){
                     string opType = op->ChildAt(0)->GetID();
                     if (opType == "LT") {
-
+                        // 
                     } else if (opType == "LT_EQ"){
-                        
+                        // 
                     } else if (opType == "GT") {
-
+                        //
                     } else if (opType == "GT_EQ"){
-                        
+                        //
                     } else if (opType == "EQ") {
                         // requires extra calculation. Ignore for now?
                     } else if (opType == "NOT_EQ") {
@@ -222,11 +223,11 @@ void AnalyzeModule::analyzeLoop(Markup* parseTree, AnalysisTree* analysis) {
                     string opType = op->ChildAt(0)->GetID();
                     hasIncrement = true;
                     if(opType == "INCR"){
-
+                        //add
                         
 
                     } else if(opType == "DECR"){
-
+                        //subtract
 
                     }
 
@@ -245,7 +246,7 @@ void AnalyzeModule::analyzeLoop(Markup* parseTree, AnalysisTree* analysis) {
                     }
 
                 } else{
-                    //nothing
+                    //nothing was found
 
                 }
             }
