@@ -822,18 +822,22 @@ Markup* ActionRoutines::ResolveParameter(string arg, Markup* current) {
     regex fn = regex("^[ \t]*([a-zA-Z_][a-zA-Z_0-9]*)[ \t]*(\\(.*\\))?[ \t]*$");
     smatch matches;
 
-    cout << "Arg: " << arg << endl;
+    // cout << "Arg: " << arg << endl;
 
     if (regex_search(arg, matches, fn)) {
         string data = matches[0].str();
         return ExecuteAction(data, current);
     } else {
 
+        int srcIndex = 0;
         string subscript = "";
         bool readSubscript = false;
+        bool readAncestor = false;
 
         regex indexReg = regex("^(\\+|\\-)?\\d+$");
+        regex sibOffsetReg = regex("^@((?:\\+|\\-)\\d+)$");
         regex keyReg = regex("^(v)?\"(.*)\"$");
+        regex ancestorReg = regex("^\"(.*)\"$");
 
         for (int i = 0; i < arg.size() && current != NULL; i++) {
             if (readSubscript) {
@@ -841,18 +845,61 @@ Markup* ActionRoutines::ResolveParameter(string arg, Markup* current) {
                     readSubscript = false;
                     if (regex_search(subscript, matches, indexReg)) {
                         string index = matches[0].str();
+                        subscript = "";
                         int n;
                         istringstream(index) >> n;
                         current = current->ChildAt(n);
+                        srcIndex = current->IndexInParent();
                     } else if (regex_search(subscript, matches, keyReg)) {
                         bool dive = matches[1].str() != "";
                         string id = matches[2].str();
+                        subscript = "";
                         if (dive)
                             current = current->FindFirstById(id);
                         else
                             current = current->FindFirstChildById(id);
+                        srcIndex = current->IndexInParent();
+                    } else if (regex_search(subscript, matches, sibOffsetReg)) {
+                        string index = matches[1].str();
+                        subscript = "";
+                        int n;
+                        istringstream(index) >> n;
+                        n = srcIndex + n;
+                        current = current->ChildAt(n);
+                        srcIndex = current->IndexInParent();
                     } else {
                         cout << "Error parsing action routine parameter\n";
+                        subscript = "";
+                        break;
+                    }
+                    
+                } else {
+                    subscript += arg[i];
+                }
+            } else if (readAncestor) {
+                if (arg[i] == ')') {
+                    readAncestor = false;
+                    if (regex_search(subscript, matches, ancestorReg)) {
+                        string ancestor = matches[1].str();
+                        subscript = "";
+
+                        int tempSrc;
+                        Markup* temp = current;
+                        do {
+                            tempSrc = temp->IndexInParent();
+                            temp = temp->Parent();
+                        } while (temp != NULL && temp->GetID() != ancestor);
+
+                        if (temp != NULL) {
+                            srcIndex = tempSrc;
+                            current = temp;
+                        } else {
+                            cout << "Error parsing action routine parameter - Production '" << ancestor << "' not found as an ancestor to the current node.\n"; 
+                            break;
+                        }
+                    } else {
+                        cout << "Error parsing action routine parameter\n";
+                        subscript = "";
                         break;
                     }
                     
@@ -861,9 +908,12 @@ Markup* ActionRoutines::ResolveParameter(string arg, Markup* current) {
                 }
             } else {
                 if (arg[i] == '^') {
+                    srcIndex = current->IndexInParent();
                     current = current->Parent();
                 } else if (arg[i] == '[') {
                     readSubscript = true;
+                } else if (arg[i] == '(') {
+                    readAncestor = true;
                 }
             }
         }
@@ -879,6 +929,7 @@ Markup* DeclareVarAction::Execute(Markup* container, vector<Markup*> params) {
         Markup* statement = container->GetID() == "statement" ? container : container->FindAncestorById("statement");
         if (statement != NULL) {
             statement->localDeclarations[id] = type;
+            cout << "Declared " << id << " with type " << type << endl;
         }
     } else {
         cout << "Failed to read variable declaration\n";
@@ -886,8 +937,6 @@ Markup* DeclareVarAction::Execute(Markup* container, vector<Markup*> params) {
     return NULL;
 }
 Markup* AssignVarAction::Execute(Markup* container, vector<Markup*> params) {
-    cout << (params[0] == NULL ? "Param 1 NULL" : "Param 1 Valid") << endl;
-    cout << (params[1] == NULL ? "Param 2 NULL" : "Param 2 Valid") << endl;
     if (params.size() >= 2 && params[0] != NULL && params[1] != NULL) {
         string id = params[0]->GetData();
         Markup* value = params[1];
