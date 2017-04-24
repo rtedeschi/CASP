@@ -43,6 +43,10 @@ class AssignVarAction : public ActionRoutine {
     public:
         Markup* Execute(Markup*, vector<Markup*>);
 };
+class AccumulateVarAction : public ActionRoutine {
+    public:
+        Markup* Execute(Markup*, vector<Markup*>);
+};
 class ResolveExprAction : public ActionRoutine {
     public:
         Markup* Execute(Markup*, vector<Markup*>);
@@ -54,6 +58,7 @@ class ResolveExprAction : public ActionRoutine {
 class ActionRoutines {
     public:
         static Markup* ExecuteAction(string, Markup*);
+        static Markup* ExecuteAction(string, Markup*, vector<Markup*>);
 
     private:
         static vector<Markup*> ResolveParameters(string, Markup*);
