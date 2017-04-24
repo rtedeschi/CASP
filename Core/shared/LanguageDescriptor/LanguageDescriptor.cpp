@@ -926,7 +926,10 @@ Markup* DeclareVarAction::Execute(Markup* container, vector<Markup*> params) {
     if (params.size() >= 2 && params[0] != NULL && params[1] != NULL) {
         string id = params[0]->GetData();
         string type = params[1]->GetData();
-        Markup* statement = container->GetID() == "statement" ? container : container->FindAncestorById("statement");
+        Markup* statement = container->GetID() == "statement" || container->GetID() == "function-definition" ? container : container->FindAncestorById("statement");
+        if (statement == NULL)
+            statement = container->FindAncestorById("function-definition");
+
         if (statement != NULL) {
             statement->localDeclarations[id] = type;
             cout << "Declared " << id << " with type " << type << endl;
@@ -954,11 +957,116 @@ Markup* AssignVarAction::Execute(Markup* container, vector<Markup*> params) {
     return NULL;
 }
 Markup* ResolveExprAction::Execute(Markup* container, vector<Markup*> params) {
-    if (params.size() >= 1 && params[0] != NULL && params[0]->GetID() == "expression") {
-        // string id = params[0]->GetData();
-        return params[0];
+    if (params.size() >= 1 && params[0] != NULL && params[0]->GetID() == "assign-expression") {
+        return ResolveExpr(params[0]->ChildAt(0));
     } else {
         cout << "Failed to resolve expression\n";
     }
     return NULL;
+}
+Markup* ResolveExprAction::ResolveExpr(Markup* data) {
+    string id = data->GetID();
+    // <grouped-expression>|<method-invocation>|<assignment>|<operation>|<simple-expression>
+
+    if (id == "grouped-expression") {
+        data = ResolveExpr(data->FindFirstChildById("expression")->ChildAt(0));
+    } else if (id == "operation-expression") {
+        data = ResolveExpr(data->ChildAt(0));
+    } else if (id == "simple-expression") {
+        data = ResolveExpr(data->ChildAt(0));
+        // <member-access>|<subscript-access>|<literal>|<identifier>
+        // TODO member-access & subscript-access?
+    } else if (id == "literal") {
+        data = data->ChildAt(0);
+        // <bool-literal>|[FLOAT_LITERAL]|[INT_LITERAL]|[STRING_LITERAL]
+    } else if (id == "identifier" || id == "ID") {
+        unordered_map<string, Markup*> assignments = data->AccessibleValues();
+        string var = data->GetData();
+        if (assignments[var] != NULL) {
+            data = assignments[var];
+        } else {
+            cout << "Variable " << var << " may be unassigned\n";
+        }
+    } else if (id == "operation") {
+        data = ResolveExpr(data->ChildAt(0));
+        //<binary-expression>|<unary-expression>
+    } else if (id == "unary-expression") {
+        // TODO
+    } else if (id == "binary-expression") {
+        data = ResolveExpr(data->ChildAt(0));
+        //<relational-expression>|<algebraic-expression>|<logical-expression>
+    } else if (id == "algebraic-expression") {
+        vector<Markup*> operands = { ResolveExpr(data->ChildAt(0)) };
+        vector<Markup*> operators;
+        vector<Markup*> tails = data->FindFirstChildById("algebraic-expression-tail")->RecursiveElements();
+        for (int i = 0; i < tails.size(); i++) {
+            operators.push_back(tails[i]->FindFirstChildById("math-binary-op")->ChildAt(0));
+            operands.push_back(ResolveExpr(tails[i]->FindFirstChildById("operation-expression")->ChildAt(0)));
+        }
+
+        // Process multiplication and division
+        for (int i = operators.size() - 1; i >= 0; i--) {
+            Markup* op2 = operands[i + 1];
+            Markup* op1 = operands[i];
+            operands.erase(operands.begin() + i, operands.begin() + i + 2);
+            Markup* op = operators[i];
+            operators.erase(operators.begin() + i);
+            string opId = op->GetID();
+            // did both operands resolve to int literals
+            if (op1->GetID() == "INT_LITERAL" && op2->GetID() == "INT_LITERAL" && (opId == "ASTERISK" || opId == "SLASH")) {
+                long op1data, op2data, result;
+                istringstream(op1->GetData()) >> op1data;
+                istringstream(op2->GetData()) >> op2data;
+                if (opId == "ASTERISK")
+                    result = op1data * op2data;
+                else if (opId == "SLASH")
+                    result = op1data / op2data;
+                Markup* r = new Markup("INT_LITERAL", to_string(result));
+                operands.insert(operands.begin() + i, r);
+            } else {
+                operators.insert(operators.begin() + i, op);
+                operands.insert(operands.begin() + i, op2);
+                operands.insert(operands.begin() + i, op1);
+            }
+        }
+        // process addition and subtraction
+        for (int i = operators.size() - 1; i >= 0; i--) {
+            Markup* op2 = operands[i + 1];
+            Markup* op1 = operands[i];
+            operands.erase(operands.begin() + i, operands.begin() + i + 2);
+            Markup* op = operators[i];
+            operators.erase(operators.begin() + i);
+            string opId = op->GetID();
+            // did both operands resolve to int literals?
+            if (op1->GetID() == "INT_LITERAL" && op2->GetID() == "INT_LITERAL" && (opId == "PLUS" || opId == "MINUS")) {
+                long op1data, op2data, result;
+                istringstream(op1->GetData()) >> op1data;
+                istringstream(op2->GetData()) >> op2data;
+                if (opId == "MINUS")
+                    op2data *= -1;
+                result = op1data + op2data;
+                Markup* r = new Markup("INT_LITERAL", to_string(result));
+                operands.insert(operands.begin() + i, r);
+            } else {
+                operators.insert(operators.begin() + i, op->Clone());
+                operands.insert(operands.begin() + i, op2->Clone());
+                operands.insert(operands.begin() + i, op1->Clone());
+            }
+        }
+
+        if (operands.size() == 1) {
+            data = operands[0];
+        } else {
+            data = new Markup("generated-expression");
+            int i;
+            for (i = 0; i < operators.size(); i++) {
+                data->AddChild(operands[i]);
+                data->AddChild(operators[i]);
+            }
+            data->AddChild(operands[i]);
+        }
+        
+    }
+
+    return data;
 }

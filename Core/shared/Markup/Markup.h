@@ -158,6 +158,11 @@ class Markup : public Printable
         unordered_map<string, string> localDeclarations;
         unordered_map<string, Markup*> localValues;
 
+        /*
+            Deep copies the object
+        */
+        Markup* Clone();
+
     private:
         // Parent of the node
         Markup* parent;

@@ -250,6 +250,20 @@ unordered_map<string, string> Markup::AccessibleDeclarations() {
         }
     }
 
+    // try to get previous statement declarations
+    if (parent != NULL && id == "statement") {
+        vector<Markup*> s;
+        Markup* sl = parent;
+        while ((sl = sl->parent) != NULL && sl->GetID() == "statement-list") {
+            s.insert(s.begin(), sl->FindFirstChildById("statement"));
+        }
+        for (int i = 0; i < s.size(); i++) {
+            unordered_map<string, string> sibDecl = s[i]->AccessibleDeclarations();
+            for ( auto it = sibDecl.begin(); it != sibDecl.end(); ++it )
+                declarations[it->first] = it->second;
+        }
+    }
+
     // add any local declarations
     for ( auto it = localDeclarations.begin(); it != localDeclarations.end(); ++it )
         declarations[it->first] = it->second;
@@ -259,6 +273,8 @@ unordered_map<string, string> Markup::AccessibleDeclarations() {
 
 unordered_map<string, Markup*> Markup::AccessibleValues() {
     unordered_map<string, Markup*> values;
+
+    // cout << "Getting accessible values on " << GetData() << " (" << GetID() << ")" << endl;
 
     // try to get any global values
     Markup* statementAncestor = FindAncestorById("statement");
@@ -284,6 +300,20 @@ unordered_map<string, Markup*> Markup::AccessibleValues() {
         }
     }
 
+    // try to get previous statement values
+    if (parent != NULL && id == "statement") {
+        vector<Markup*> s;
+        Markup* sl = parent;
+        while ((sl = sl->parent) != NULL && sl->GetID() == "statement-list") {
+            s.insert(s.begin(), sl->FindFirstChildById("statement"));
+        }
+        for (int i = 0; i < s.size(); i++) {
+            unordered_map<string, Markup*> sibDecl = s[i]->AccessibleValues();
+            for ( auto it = sibDecl.begin(); it != sibDecl.end(); ++it )
+                values[it->first] = it->second;
+        }
+    }
+
     // add any local values
     for ( auto it = localValues.begin(); it != localValues.end(); ++it )
         values[it->first] = it->second;
@@ -293,4 +323,19 @@ unordered_map<string, Markup*> Markup::AccessibleValues() {
 
 int Markup::IndexInParent() {
     return index;
+}
+
+Markup* Markup::Clone() {
+    Markup* m = new Markup(id);
+    m->localDeclarations = localDeclarations;
+    m->localValues = localValues;
+
+    if (IsLeaf()) {
+        m->data = data;
+    } else {
+        for (int i = 0; i < children.size(); i++) {
+            m->AddChild(children[i]->Clone());
+        }
+    }
+    return m;
 }

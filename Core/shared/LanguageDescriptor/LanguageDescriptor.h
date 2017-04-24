@@ -46,6 +46,9 @@ class AssignVarAction : public ActionRoutine {
 class ResolveExprAction : public ActionRoutine {
     public:
         Markup* Execute(Markup*, vector<Markup*>);
+
+    private:
+        Markup* ResolveExpr(Markup*);
 };
 
 class ActionRoutines {
