@@ -20,10 +20,9 @@ using namespace std;
 
 class CASP_Plugin {
     public:
-        virtual CASP_Return* Execute(Markup*, LanguageDescriptorObject*, vector<arg>) = 0;
-        // Markup data, function args, function arg count
-        CASP_Return* returnData = new CASP_Return();
- 
+        virtual CASP_Return* Execute(Markup* markup, LanguageDescriptorObject* source_ldo, vector<arg> fnArgs, CASP_Return* inputReturn = NULL) = 0;
+
+        CASP_Return* returnData = NULL;
 };
 
 // extern unordered_map<string, CASP_Plugin*> plugins;

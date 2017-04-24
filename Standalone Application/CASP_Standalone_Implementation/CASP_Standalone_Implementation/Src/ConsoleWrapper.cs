@@ -18,6 +18,25 @@ namespace CASP_Standalone_Implementation.Src
         public static string FunctionArgument = "args";
         public static string SourceLanguage = "sourcelang";
 
+        public static bool Running
+        {
+            get
+            {
+                return ActiveProcess != null;
+            }
+        }
+
+        static Process ActiveProcess = null;
+        static long lastRunTime = 0;
+
+        public static long LastRunTime
+        {
+            get
+            {
+                return lastRunTime;
+            }
+        }
+
         public static string GenerateRequest(params string[] data)
         {
             string ret = "";
@@ -37,22 +56,51 @@ namespace CASP_Standalone_Implementation.Src
 
         public static async Task<string> Execute(string request)
         {
+            Stopwatch timer = new Stopwatch();
             return await Task.Run(() =>
             {
-                Process p = new Process();
-                p.StartInfo.UseShellExecute = false;
-                p.StartInfo.RedirectStandardOutput = true;
-                p.StartInfo.CreateNoWindow = true;
-                p.StartInfo.WorkingDirectory = CORE_DIR;
-                p.StartInfo.FileName = CORE_DIR + "/CASP.exe";
-                p.StartInfo.Arguments = request;
-                p.Start();
+                string output = "";
+                Kill();
+                try {
+                    ActiveProcess = new Process();
+                    ActiveProcess.StartInfo.UseShellExecute = false;
+                    ActiveProcess.StartInfo.RedirectStandardOutput = true;
+                    ActiveProcess.StartInfo.CreateNoWindow = true;
+                    ActiveProcess.StartInfo.WorkingDirectory = CORE_DIR;
+                    ActiveProcess.StartInfo.FileName = CORE_DIR + "/CASP.exe";
+                    ActiveProcess.StartInfo.Arguments = request;
 
-                string output = p.StandardOutput.ReadToEnd();
-                p.WaitForExit();
+                    timer.Start();
+
+                    ActiveProcess.Start();
+                    output = ActiveProcess.StandardOutput.ReadToEnd();
+                    ActiveProcess.WaitForExit();
+                }
+                catch (Exception e)
+                {
+                    // If a process is forcefully killed in the middle of operation, it might throw an error
+                    ActiveProcess.Dispose();
+                    ActiveProcess = null;
+                }
+
+                timer.Stop();
+                lastRunTime = timer.ElapsedMilliseconds;
+
+                Kill();
 
                 return output;
             });
+        }
+
+        public static void Kill()
+        {
+            if (Running)
+            {
+                if (!ActiveProcess.HasExited)
+                    ActiveProcess.Kill();
+                ActiveProcess.Dispose();
+                ActiveProcess = null;
+            }
         }
     }
 }

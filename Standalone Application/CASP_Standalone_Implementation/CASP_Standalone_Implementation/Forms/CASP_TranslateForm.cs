@@ -39,10 +39,18 @@ namespace CASP_Standalone_Implementation.Forms
             JObject source = (JObject)data["OriginalSource"];
             JObject target = (JObject)data["TranslatedSource"];
 
-            string slanguage = source["Language"].ToString();
-            string sdata = source["Data"].ToString();
-            string tlanguage = target["Language"].ToString();
-            string tdata = target["Data"].ToString();
+            string slanguage = "", sdata = "", tlanguage = "", tdata = "";
+
+            if (source != null)
+            {
+                slanguage = source["Language"].ToString();
+                sdata = source["Data"].ToString();
+            }
+            if (target != null)
+            {
+                tlanguage = target["Language"].ToString();
+                tdata = target["Data"].ToString();
+            }
 
             return new Output() {
                 Source = new KeyValuePair<string, string>(slanguage, sdata),

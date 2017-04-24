@@ -11,6 +11,7 @@
 
 #include <vector>
 #include <string>
+#include <sstream>
 #include <regex>
 #include <iostream>
 #include <unordered_map>
@@ -22,12 +23,44 @@
 
 using namespace std;
 
-enum ProductionSetType { _Root, _Terminal, _Group, _Alternation, _Production };
+enum ProductionSetType { _Root, _Terminal, _Group, _Alternation, _Production, _Action };
 
 class Production;
 class ProductionSet;
 class LanguageDescriptorObject;
 class TokenMatch;
+
+class ActionRoutine {
+    public:
+        virtual Markup* Execute(Markup*, vector<Markup*>) = 0;
+};
+
+class DeclareVarAction : public ActionRoutine {
+    public:
+        Markup* Execute(Markup*, vector<Markup*>);
+};
+class AssignVarAction : public ActionRoutine {
+    public:
+        Markup* Execute(Markup*, vector<Markup*>);
+};
+class ResolveExprAction : public ActionRoutine {
+    public:
+        Markup* Execute(Markup*, vector<Markup*>);
+
+    private:
+        Markup* ResolveExpr(Markup*);
+};
+
+class ActionRoutines {
+    public:
+        static Markup* ExecuteAction(string, Markup*);
+
+    private:
+        static vector<Markup*> ResolveParameters(string, Markup*);
+        static Markup* ResolveParameter(string, Markup*);
+
+        static unordered_map<string, ActionRoutine*> actions;
+};
 
 class Token : public Printable {
     public:
@@ -79,6 +112,7 @@ class LanguageDescriptorObject
 
 class TokenMatch {
     public:
+        bool isAction = false;
         string prod;
         int begin;
         int end;
@@ -86,7 +120,7 @@ class TokenMatch {
         vector<Token> match;
         vector<TokenMatch*> submatches;
     
-        Markup* GenerateMarkup();
+        Markup* GenerateMarkup(Markup* parent = NULL, bool addChildrenToParent = false);
         void Print(int);
 
     private:
@@ -97,7 +131,7 @@ class ProductionSet {
     public:
         ProductionSet(Production*);
         void Parse(string);
-        void SetGroup(string);
+        void SetAction(string);
         void SetTerminal(string);
         void SetProduction(string);
         void SetAlternation(string);
@@ -121,6 +155,7 @@ class ProductionSet {
         TokenMatch* MatchTerminal(vector<Token>, int);
         TokenMatch* MatchAlternation(vector<Token>, int);
         TokenMatch* MatchProduction(vector<Token>, int);
+        TokenMatch* MatchAction(string, int);
 
         Production* prod;
         enum ProductionSetType type = _Root;

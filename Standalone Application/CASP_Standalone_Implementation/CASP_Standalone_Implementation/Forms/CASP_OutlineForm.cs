@@ -209,51 +209,55 @@ namespace CASP_Standalone_Implementation.Forms
 
             List<OutlineGraph> graphs = new List<OutlineGraph>();
 
-            for (int i = 0; i < outlines.Count; i++)
+            if (outlines != null)
             {
-                List<dynamic> edgeList = new List<dynamic>();
-                JArray o = (JArray)outlines[i];
 
-                OutlineGraph graph = new OutlineGraph();
-
-                for (int j = 0; j < o.Count; j++)
+                for (int i = 0; i < outlines.Count; i++)
                 {
-                    JObject node = (JObject)o[j];
-                    string nodeText = (string)node["data"];
-                    BlockType nodeType = (BlockType)Enum.Parse(typeof(BlockType), (string)node["type"]);
-                    JArray edges = (JArray)node["edges"];
+                    List<dynamic> edgeList = new List<dynamic>();
+                    JArray o = (JArray)outlines[i];
 
-                    graph.AddNode(new OutlineNode() { text = nodeText, type = nodeType });
+                    OutlineGraph graph = new OutlineGraph();
 
-                    for (int k = 0; k < edges.Count; k++)
+                    for (int j = 0; j < o.Count; j++)
                     {
-                        JObject edge = (JObject)edges[k];
-                        int source = (int)edge["source"];
-                        int target = (int)edge["target"];
-                        string edgeText = (string)edge["data"];
+                        JObject node = (JObject)o[j];
+                        string nodeText = (string)node["data"];
+                        BlockType nodeType = (BlockType)Enum.Parse(typeof(BlockType), (string)node["type"]);
+                        JArray edges = (JArray)node["edges"];
 
-                        edgeList.Add(new { source = source, target = target, text = edgeText });
+                        graph.AddNode(new OutlineNode() { text = nodeText, type = nodeType });
+
+                        for (int k = 0; k < edges.Count; k++)
+                        {
+                            JObject edge = (JObject)edges[k];
+                            int source = (int)edge["source"];
+                            int target = (int)edge["target"];
+                            string edgeText = (string)edge["data"];
+
+                            edgeList.Add(new { source = source, target = target, text = edgeText });
+                        }
                     }
+
+                    for (int j = 0; j < edgeList.Count; j++)
+                    {
+                        graph.AddEdge(edgeList[j].source, edgeList[j].target, edgeList[j].text);
+                    }
+
+                    graphs.Add(graph);
                 }
 
-                for (int j = 0; j < edgeList.Count; j++)
+                if (graphs.Count == 0)
                 {
-                    graph.AddEdge(edgeList[j].source, edgeList[j].target, edgeList[j].text);
+                    OutlineGraph graph = new OutlineGraph();
+                    graph.AddNode(new OutlineNode()
+                    {
+                        index = 0,
+                        text = "No flowchart data\nto display!",
+                        type = BlockType.Process
+                    });
+                    graphs.Add(graph);
                 }
-
-                graphs.Add(graph);
-            }
-
-            if (graphs.Count == 0)
-            {
-                OutlineGraph graph = new OutlineGraph();
-                graph.AddNode(new OutlineNode()
-                {
-                    index = 0,
-                    text = "No flowchart data\nto display!",
-                    type = BlockType.Process
-                });
-                graphs.Add(graph);
             }
 
             return graphs;

@@ -21,25 +21,43 @@ void ControlModule::Run(SOURCE_LANGUAGE sourceLanguage, MODULE_ID moduleID, CODE
     LANGUAGE_DESCRIPTOR_OBJECT descriptor = NULL;
     CODE_OUTPUT code;
     MARKUP_OBJECT markup = NULL;
+    bool cont = true;
 
     try {
         descriptor = GetLanguageDescriptor(sourceLanguage);
-        code = CoalesceCode(codeSnippets);
-        // TODO temporary passthrough
-        code = codeSnippets;
-        markup = Parse(code, descriptor);
-    } catch (std::string message) {
-        // do something with the message here and don't continue with the execution
-
+    } catch (...) {
+        cont = false;
+        returnData->AddStandardError("Language '" + sourceLanguage + "' could not be read. Could not proceed with execution.");
     }
 
-    Execute(markup, descriptor, moduleID, functionArgs);
+    if (cont) {
+        try {
+            code = CoalesceCode(codeSnippets);
+        } catch (...) {
+            cont = false;
+            returnData->AddStandardError("Error coalescing code. Could not proceed with execution");
+        }
+    }
+
+    if (cont) {
+        try {
+            // TODO temporary passthrough
+            code = codeSnippets;
+            markup = Parse(code, descriptor);
+        } catch (std::string message) {
+            cont = false;
+            returnData->AddStandardError("Error parsing code. Could not proceed with execution");
+        }
+    }
+
+    if (cont)
+        Execute(markup, descriptor, moduleID, functionArgs);
+
+    FormatOutput();
 }
 
 LANGUAGE_DESCRIPTOR_OBJECT ControlModule::GetLanguageDescriptor(SOURCE_LANGUAGE sourceLanguage) throw (std::string) {
-    if (ValidateSourceLanguage(sourceLanguage))
-        return ReadLanguageFile(sourceLanguage);
-    throw "Language 'sourceLanguage' has not been defined"; // TODO change this
+    return ReadLanguageFile(sourceLanguage);
 }
 
 bool ControlModule::ValidateSourceLanguage(SOURCE_LANGUAGE sourceLanguage) {
@@ -124,37 +142,34 @@ MARKUP_OBJECT ControlModule::Parse(CODE_OUTPUT code, LANGUAGE_DESCRIPTOR_OBJECT 
 
 void ControlModule::Execute(MARKUP_OBJECT markup, LANGUAGE_DESCRIPTOR_OBJECT ldo, MODULE_ID moduleID, FUNCTION_ARGS functionArgs) {
     MODULE_REF ref = ModuleRetrieval(moduleID);
-    MODULE_RESPONSE response = ModuleExecution(ref, markup, ldo, functionArgs);
-    FormatOutput(response);
+    if (ref != NULL)
+        ModuleExecution(ref, markup, ldo, functionArgs);
 }
 
 MODULE_REF ControlModule::ModuleRetrieval(MODULE_ID moduleID) {
 
-    return GetModule(moduleID);
-}
-
-MODULE_RESPONSE ControlModule::ModuleExecution(MODULE_REF moduleRef, MARKUP_OBJECT markup, LANGUAGE_DESCRIPTOR_OBJECT ldo, FUNCTION_ARGS functionArgs) {
-    MODULE_RESPONSE response = NULL;
-
     try {
-        response = moduleRef->Execute(markup, ldo, functionArgs);
-        // attempt to execute the module
+        return GetModule(moduleID);
     } catch (...) {
-        cout << "An error occurred when executing module!\n";
-        response = new CASP_Return();
-        response->AddStandardError("An error occurred while trying to execute the module!");
+        returnData->AddStandardError("Module '" + moduleID + "' could not be found.");
+        return NULL;
     }
 
-    return response;
 }
 
-void ControlModule::FormatOutput(MODULE_RESPONSE moduleResponse) {
+void ControlModule::ModuleExecution(MODULE_REF moduleRef, MARKUP_OBJECT markup, LANGUAGE_DESCRIPTOR_OBJECT ldo, FUNCTION_ARGS functionArgs) {
+    try {
+        // attempt to execute the module
+        returnData = moduleRef->Execute(markup, ldo, functionArgs, returnData);
+    } catch (...) {
+        returnData->AddStandardError("An error occurred while trying to execute the module!");
+    }
+}
 
-    if (moduleResponse == NULL) 
-        moduleResponse = new CASP_Return();
-        
+void ControlModule::FormatOutput() {
+
     cout << "CASP_RETURN_DATA_START\n";
-    moduleResponse->Print();
+    returnData->Print();
     cout << "\nCASP_RETURN_DATA_END\n";
 
 }

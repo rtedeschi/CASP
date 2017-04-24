@@ -14,6 +14,8 @@ CASP_Plugin* GetModule(string id) {
     CASP_Plugin* plugin = NULL;
     if (ModuleExists(id)) {
         plugin = plugins[id];
+    } else {
+        throw "Module '" + id + "' does not exist.";
     }
     return plugin;
 }

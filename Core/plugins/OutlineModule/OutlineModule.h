@@ -25,7 +25,7 @@ class Edge;
 class OutlineModule : public CASP_Plugin {
     public:
         OutlineModule();
-        virtual CASP_Return* Execute(Markup*, LanguageDescriptorObject*, vector<arg>);
+        virtual CASP_Return* Execute(Markup* markup, LanguageDescriptorObject* source_ldo, vector<arg> fnArgs, CASP_Return* inputReturn = NULL);
 
     private:
         vector<Outline*> GetAllOutlines(Markup*);
@@ -36,7 +36,8 @@ class OutlineModule : public CASP_Plugin {
         Node* stripProcess(Markup*, Outline*, Node*, string = "");
         Node* stripMethodCall(Markup*, Outline*, Node*, string = "");
         Node* stripDecision(Markup*, Outline*, Node*, string = "");
-        Node* stripLoop(Markup*, Outline*, Node*, string = "");
+        Node* stripFor(Markup*, Outline*, Node*, string = "");
+        Node* stripWhile(Markup*, Outline*, Node*, string = "");
         Node* processStatement(Markup*, Outline*, Node*, string = "");
         Node* processBlock(Markup*, Outline*, Node*, string = "");
 };

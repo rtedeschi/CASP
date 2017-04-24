@@ -44,8 +44,10 @@ class ControlModule {
         MARKUP_OBJECT Parse(CODE_OUTPUT, LANGUAGE_DESCRIPTOR_OBJECT);
         void Execute(MARKUP_OBJECT, LANGUAGE_DESCRIPTOR_OBJECT, MODULE_ID, FUNCTION_ARGS);
         MODULE_REF ModuleRetrieval(MODULE_ID);
-        MODULE_RESPONSE ModuleExecution(MODULE_REF, MARKUP_OBJECT, LANGUAGE_DESCRIPTOR_OBJECT, FUNCTION_ARGS);
-        void FormatOutput(MODULE_RESPONSE);
+        void ModuleExecution(MODULE_REF, MARKUP_OBJECT, LANGUAGE_DESCRIPTOR_OBJECT, FUNCTION_ARGS);
+        void FormatOutput();
+
+        CASP_Return* returnData = new CASP_Return();
 };
 
 #endif

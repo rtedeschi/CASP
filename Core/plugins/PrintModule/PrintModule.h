@@ -28,7 +28,7 @@ class PrintModule : public CASP_Plugin {
     public:
         PrintModule();
 
-        virtual CASP_Return* Execute(Markup*, LanguageDescriptorObject*, vector<arg>);
+        virtual CASP_Return* Execute(Markup* markup, LanguageDescriptorObject* source_ldo, vector<arg> fnArgs, CASP_Return* inputReturn = NULL);
 
     private:
         Tree* GenerateTree(Markup*);

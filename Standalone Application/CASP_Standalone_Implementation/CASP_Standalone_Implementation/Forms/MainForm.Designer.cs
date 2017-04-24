@@ -31,7 +31,6 @@ namespace CASP_Standalone_Implementation
         /// </summary>
         private void InitializeComponent()
         {
-            this.InputTextbox = new System.Windows.Forms.TextBox();
             this.ModuleCombo = new System.Windows.Forms.ComboBox();
             this.ModuleLabel = new System.Windows.Forms.Label();
             this.RequestTextbox = new System.Windows.Forms.TextBox();
@@ -46,25 +45,9 @@ namespace CASP_Standalone_Implementation
             this.OtherArgs = new System.Windows.Forms.ListBox();
             this.NewArgButton = new System.Windows.Forms.Button();
             this.RemoveArgs = new System.Windows.Forms.Button();
+            this.InputTextbox = new System.Windows.Forms.RichTextBox();
             this.StatusStrip.SuspendLayout();
             this.SuspendLayout();
-            // 
-            // InputTextbox
-            // 
-            this.InputTextbox.AcceptsReturn = true;
-            this.InputTextbox.AcceptsTab = true;
-            this.InputTextbox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.InputTextbox.Font = new System.Drawing.Font("Courier New", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.InputTextbox.Location = new System.Drawing.Point(12, 72);
-            this.InputTextbox.Multiline = true;
-            this.InputTextbox.Name = "InputTextbox";
-            this.InputTextbox.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.InputTextbox.Size = new System.Drawing.Size(1032, 382);
-            this.InputTextbox.TabIndex = 0;
-            this.InputTextbox.WordWrap = false;
-            this.InputTextbox.TextChanged += new System.EventHandler(this.InputTextbox_TextChanged);
             // 
             // ModuleCombo
             // 
@@ -209,12 +192,29 @@ namespace CASP_Standalone_Implementation
             this.RemoveArgs.UseVisualStyleBackColor = true;
             this.RemoveArgs.Click += new System.EventHandler(this.RemoveArgs_Click);
             // 
+            // InputTextbox
+            // 
+            this.InputTextbox.AcceptsTab = true;
+            this.InputTextbox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.InputTextbox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.InputTextbox.Font = new System.Drawing.Font("Courier New", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.InputTextbox.HideSelection = false;
+            this.InputTextbox.Location = new System.Drawing.Point(12, 72);
+            this.InputTextbox.Name = "InputTextbox";
+            this.InputTextbox.Size = new System.Drawing.Size(1032, 382);
+            this.InputTextbox.TabIndex = 15;
+            this.InputTextbox.Text = "";
+            this.InputTextbox.WordWrap = false;
+            // 
             // MainForm
             // 
             this.AcceptButton = this.ExecuteButton;
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1056, 543);
+            this.Controls.Add(this.InputTextbox);
             this.Controls.Add(this.RemoveArgs);
             this.Controls.Add(this.NewArgButton);
             this.Controls.Add(this.OtherArgs);
@@ -228,7 +228,6 @@ namespace CASP_Standalone_Implementation
             this.Controls.Add(this.RequestTextbox);
             this.Controls.Add(this.ModuleLabel);
             this.Controls.Add(this.ModuleCombo);
-            this.Controls.Add(this.InputTextbox);
             this.MinimumSize = new System.Drawing.Size(1074, 500);
             this.Name = "MainForm";
             this.ShowIcon = false;
@@ -242,8 +241,6 @@ namespace CASP_Standalone_Implementation
         }
 
         #endregion
-
-        private System.Windows.Forms.TextBox InputTextbox;
         private System.Windows.Forms.ComboBox ModuleCombo;
         private System.Windows.Forms.Label ModuleLabel;
         private System.Windows.Forms.TextBox RequestTextbox;
@@ -258,6 +255,7 @@ namespace CASP_Standalone_Implementation
         private System.Windows.Forms.ListBox OtherArgs;
         private System.Windows.Forms.Button NewArgButton;
         private System.Windows.Forms.Button RemoveArgs;
+        private System.Windows.Forms.RichTextBox InputTextbox;
     }
 }
 
