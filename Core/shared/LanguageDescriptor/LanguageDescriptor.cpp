@@ -198,9 +198,9 @@ vector<Token> LanguageDescriptorObject::Tokenize(string input) {
     }
     stateMachine.Reset();
 
-    for (int i = 0; i < tokens.size(); i++) {
-        tokens[i].Print();
-    }
+    // for (int i = 0; i < tokens.size(); i++) {
+    //     tokens[i].Print();
+    // }
 
     return tokens;
 
@@ -413,11 +413,12 @@ ProductionSet::ProductionSet(Production* parentProduction) {
 void ProductionSet::Parse(string data) {
     source = data;
 
-    string g = "(?:\\(([^\\)]*?)\\))"; // Group
+    string a = "(?:\\$([^\\$]*?)\\$)"; // Action Routine
+    // string g = "(?:\\(([^\\)]*?)\\))"; // Group
     string te = "(?:\\[(.*?)\\])"; // Terminal
     string p = "(?:<(.*?)>)"; // Production
     string m = "(\\?|\\*|\\+)"; // Multiplicity
-    string one = "(" + g + "|" + te + "|" + p + ")[\t ]*" + m + "?"; // One match
+    string one = "(" + a + "|" + te + "|" + p + ")[\t ]*" + m + "?"; // One match
     string alt = "(?:[ \t]*\\|[ \t]*)"; // Alternation sequence
     string mult = "(?:" + alt + one + ")*"; // Multiple alternations
     string reg;
@@ -434,15 +435,15 @@ void ProductionSet::Parse(string data) {
     while (regex_search (t, matches, r)) {
         ProductionSet* newSet = new ProductionSet(prod);
 
-        string group = matches[3].str();
+        string actionRoutine = matches[3].str();
         string terminal = matches[4].str();
         string production = matches[5].str();
         string multiplicity = matches[6].str();
         string alternation = matches[7].str();
 
         if (alternation == "") {
-            if (group != "") {
-                newSet->SetGroup(group);
+            if (actionRoutine != "") {
+                newSet->SetAction(actionRoutine);
             } else if (terminal != "") {
                 newSet->SetTerminal(terminal);
             } else if (production != "") {
@@ -459,9 +460,9 @@ void ProductionSet::Parse(string data) {
 
 }
 
-void ProductionSet::SetGroup(string data) {
-    type = _Group;
-    Parse(data);
+void ProductionSet::SetAction(string data) {
+    type = _Action;
+    source = data;
 }
 
 void ProductionSet::SetTerminal(string data) {
@@ -545,9 +546,23 @@ TokenMatch* ProductionSet::MatchStrict(vector<Token> tokens, int startIndex) {
     }
     else if (type == _Production) {
         t = MatchProduction(tokens, startIndex);
+    } else if (type == _Action) {
+        t = MatchAction(source, startIndex);
     }
 
     return t;
+}
+TokenMatch* ProductionSet::MatchAction(string source, int startIndex) {
+
+    TokenMatch* match = new TokenMatch();
+
+    match->begin = startIndex;
+    match->end = startIndex;
+    match->length = 0;
+    match->isAction = true;
+    match->prod = source;
+
+    return match;
 }
 
 TokenMatch* ProductionSet::MatchGroup(vector<Token> tokens, int startIndex) {
@@ -564,7 +579,7 @@ TokenMatch* ProductionSet::MatchGroup(vector<Token> tokens, int startIndex) {
             match->submatches.clear();
             break;
         }
-        if (groupMatch->length > 0) {
+        if (groupMatch->length > 0 || groupMatch->isAction) {
             match->submatches.push_back(groupMatch);
             i += groupMatch->length;
         }
@@ -665,37 +680,54 @@ TokenMatch* ProductionSet::MatchProduction(vector<Token> tokens, int startIndex)
     return match;
 }
 
-Markup* TokenMatch::GenerateMarkup() {
-    Markup* r = new Markup(prod);
-    string currentData;
+Markup* TokenMatch::GenerateMarkup(Markup* parent, bool addChildrenToParent) {
+    Markup* r = NULL;
+    if (addChildrenToParent) {
+        if (parent != NULL)
+            r = parent;
+        else
+            r = new Markup(prod);
+    } else {
+        r = new Markup(prod);
+        if (parent != NULL)
+            parent->AddChild(r);
+    }
 
-    for (int i = 0; i < length; i++) {
-        Markup* c;
+    string currentData;
+    vector<TokenMatch*> sms = submatches;
+
+    for (int i = 0; i <= length; i++) {
+        Markup* c = NULL;
         TokenMatch* sub = NULL;
 
-        for (int j = 0; j < submatches.size(); j++) {
-            if (submatches[j]->begin == i + begin) {
-                sub = submatches[j];
-                break;
+        for (int j = 0; j < sms.size(); j++) {
+            if (sms[j]->begin == i + begin) {
+                sub = sms[j];
+                if (sub->isAction) {
+                    sms.erase(sms.begin() + j);
+                    break;
+                }
             }
         }
 
         if (sub != NULL) {
-            c = sub->GenerateMarkup();
-            if (sub->prod == "") {
-                r->AddChildren(c->Children());
+            if (!sub->isAction) {
+                c = sub->GenerateMarkup(r, sub->prod == "");
+                i += sub->length - 1;
             } else {
-                r->AddChild(c);
+                ActionRoutines::ExecuteAction(sub->prod, r);
+                i--;
             }
-            i += sub->length - 1;
-        } else {
+        } else if (i < length) {
             c = new Markup(match[i].id, match[i].value);
             r->AddChild(c);
         }
 
-        if (currentData != "")
-            currentData += " ";
-        currentData += c->GetData();
+        if (c != NULL) {
+            if (currentData != "")
+                currentData += " ";
+            currentData += c->GetData();
+        }
     }
     // r->SetData(currentData);
 
@@ -729,4 +761,312 @@ void TokenMatch::Print(int tab) {
             cout << match[i].id << ": " << match[i].value << endl;
         }
     }
+}
+
+unordered_map<string, ActionRoutine*> ActionRoutines::actions = {
+    { "DeclareVar", new DeclareVarAction() },
+    { "AssignVar", new AssignVarAction() },
+    { "ResolveExpr", new ResolveExprAction() }
+};
+
+Markup* ActionRoutines::ExecuteAction(string source, Markup* container) {
+    regex r = regex("^[ \t]*([a-zA-Z_][a-zA-Z_0-9]*)[ \t]*(?:\\((.*)\\))?[ \t]*$");
+    smatch matches;
+
+    regex_search(source, matches, r);
+    string actionID = matches[1].str();
+    string actionParameters = matches[2].str();
+
+    vector<Markup*> params = ResolveParameters(actionParameters, container);
+    ActionRoutine* action = NULL;
+
+    // cout << "Executed action " << actionID << endl;
+
+    if ((action = ActionRoutines::actions[actionID]) != NULL) {
+        return action->Execute(container, params);
+    }
+
+
+    return NULL;
+}
+vector<Markup*> ActionRoutines::ResolveParameters(string args, Markup* current) {
+    vector<Markup*> params;
+
+    if (args != "") {
+        int groupLevel = 0;
+
+        string arg = "";
+        for (int i = 0; i < args.size(); i++) {
+            if (args[i] == ',' && groupLevel == 0) {
+                Markup* a = ResolveParameter(arg, current);
+                params.push_back(a);
+                arg = "";
+            } else {
+                if (args[i] == '(')
+                    groupLevel++;
+                else if (args[i] == ')')
+                    groupLevel--;
+                arg += args[i];
+            }
+        }
+        if (arg != "") {
+            Markup* a = ResolveParameter(arg, current);
+            params.push_back(a);
+        }
+
+    }
+
+    return params;
+}
+Markup* ActionRoutines::ResolveParameter(string arg, Markup* current) {
+    regex fn = regex("^[ \t]*([a-zA-Z_][a-zA-Z_0-9]*)[ \t]*(\\(.*\\))?[ \t]*$");
+    smatch matches;
+
+    // cout << "Arg: " << arg << endl;
+
+    if (regex_search(arg, matches, fn)) {
+        string data = matches[0].str();
+        return ExecuteAction(data, current);
+    } else {
+
+        int srcIndex = 0;
+        string subscript = "";
+        bool readSubscript = false;
+        bool readAncestor = false;
+
+        regex indexReg = regex("^(\\+|\\-)?\\d+$");
+        regex sibOffsetReg = regex("^@((?:\\+|\\-)\\d+)$");
+        regex keyReg = regex("^(v)?\"(.*)\"$");
+        regex ancestorReg = regex("^\"(.*)\"$");
+
+        for (int i = 0; i < arg.size() && current != NULL; i++) {
+            if (readSubscript) {
+                if (arg[i] == ']') {
+                    readSubscript = false;
+                    if (regex_search(subscript, matches, indexReg)) {
+                        string index = matches[0].str();
+                        subscript = "";
+                        int n;
+                        istringstream(index) >> n;
+                        current = current->ChildAt(n);
+                        srcIndex = current->IndexInParent();
+                    } else if (regex_search(subscript, matches, keyReg)) {
+                        bool dive = matches[1].str() != "";
+                        string id = matches[2].str();
+                        subscript = "";
+                        if (dive)
+                            current = current->FindFirstById(id);
+                        else
+                            current = current->FindFirstChildById(id);
+                        srcIndex = current->IndexInParent();
+                    } else if (regex_search(subscript, matches, sibOffsetReg)) {
+                        string index = matches[1].str();
+                        subscript = "";
+                        int n;
+                        istringstream(index) >> n;
+                        n = srcIndex + n;
+                        current = current->ChildAt(n);
+                        srcIndex = current->IndexInParent();
+                    } else {
+                        cout << "Error parsing action routine parameter\n";
+                        subscript = "";
+                        break;
+                    }
+                    
+                } else {
+                    subscript += arg[i];
+                }
+            } else if (readAncestor) {
+                if (arg[i] == ')') {
+                    readAncestor = false;
+                    if (regex_search(subscript, matches, ancestorReg)) {
+                        string ancestor = matches[1].str();
+                        subscript = "";
+
+                        int tempSrc;
+                        Markup* temp = current;
+                        do {
+                            tempSrc = temp->IndexInParent();
+                            temp = temp->Parent();
+                        } while (temp != NULL && temp->GetID() != ancestor);
+
+                        if (temp != NULL) {
+                            srcIndex = tempSrc;
+                            current = temp;
+                        } else {
+                            cout << "Error parsing action routine parameter - Production '" << ancestor << "' not found as an ancestor to the current node.\n"; 
+                            break;
+                        }
+                    } else {
+                        cout << "Error parsing action routine parameter\n";
+                        subscript = "";
+                        break;
+                    }
+                    
+                } else {
+                    subscript += arg[i];
+                }
+            } else {
+                if (arg[i] == '^') {
+                    srcIndex = current->IndexInParent();
+                    current = current->Parent();
+                } else if (arg[i] == '[') {
+                    readSubscript = true;
+                } else if (arg[i] == '(') {
+                    readAncestor = true;
+                }
+            }
+        }
+    }
+
+    return current;
+
+}
+Markup* DeclareVarAction::Execute(Markup* container, vector<Markup*> params) {
+    if (params.size() >= 2 && params[0] != NULL && params[1] != NULL) {
+        string id = params[0]->GetData();
+        string type = params[1]->GetData();
+        Markup* statement = container->GetID() == "statement" || container->GetID() == "function-definition" ? container : container->FindAncestorById("statement");
+        if (statement == NULL)
+            statement = container->FindAncestorById("function-definition");
+
+        if (statement != NULL) {
+            statement->localDeclarations[id] = type;
+            cout << "Declared " << id << " with type " << type << endl;
+        }
+    } else {
+        cout << "Failed to read variable declaration\n";
+    }
+    return NULL;
+}
+Markup* AssignVarAction::Execute(Markup* container, vector<Markup*> params) {
+    if (params.size() >= 2 && params[0] != NULL && params[1] != NULL) {
+        string id = params[0]->GetData();
+        Markup* value = params[1];
+        Markup* statement = container->GetID() == "statement" || container->GetID() == "function-definition" ? container : container->FindAncestorById("statement");
+        if (statement == NULL)
+            statement = container->FindAncestorById("function-definition");
+        
+        if (statement != NULL) {
+            statement->localValues[id] = value;
+            cout << "Assigned " << id << " a value of " << value->GetData() << endl;
+        }
+    } else {
+        cout << "Failed to read assignment\n";
+    }
+    return NULL;
+}
+Markup* ResolveExprAction::Execute(Markup* container, vector<Markup*> params) {
+    if (params.size() >= 1 && params[0] != NULL && params[0]->GetID() == "assign-expression") {
+        return ResolveExpr(params[0]->ChildAt(0));
+    } else {
+        cout << "Failed to resolve expression\n";
+    }
+    return NULL;
+}
+Markup* ResolveExprAction::ResolveExpr(Markup* data) {
+    string id = data->GetID();
+    // <grouped-expression>|<method-invocation>|<assignment>|<operation>|<simple-expression>
+
+    if (id == "grouped-expression") {
+        data = ResolveExpr(data->FindFirstChildById("expression")->ChildAt(0));
+    } else if (id == "operation-expression") {
+        data = ResolveExpr(data->ChildAt(0));
+    } else if (id == "simple-expression") {
+        data = ResolveExpr(data->ChildAt(0));
+        // <member-access>|<subscript-access>|<literal>|<identifier>
+        // TODO member-access & subscript-access?
+    } else if (id == "literal") {
+        data = data->ChildAt(0);
+        // <bool-literal>|[FLOAT_LITERAL]|[INT_LITERAL]|[STRING_LITERAL]
+    } else if (id == "identifier" || id == "ID") {
+        unordered_map<string, Markup*> assignments = data->AccessibleValues();
+        string var = data->GetData();
+        if (assignments[var] != NULL) {
+            data = assignments[var];
+        } else {
+            cout << "Variable " << var << " may be unassigned\n";
+        }
+    } else if (id == "operation") {
+        data = ResolveExpr(data->ChildAt(0));
+        //<binary-expression>|<unary-expression>
+    } else if (id == "unary-expression") {
+        // TODO
+    } else if (id == "binary-expression") {
+        data = ResolveExpr(data->ChildAt(0));
+        //<relational-expression>|<algebraic-expression>|<logical-expression>
+    } else if (id == "algebraic-expression") {
+        vector<Markup*> operands = { ResolveExpr(data->ChildAt(0)) };
+        vector<Markup*> operators;
+        vector<Markup*> tails = data->FindFirstChildById("algebraic-expression-tail")->RecursiveElements();
+        for (int i = 0; i < tails.size(); i++) {
+            operators.push_back(tails[i]->FindFirstChildById("math-binary-op")->ChildAt(0));
+            operands.push_back(ResolveExpr(tails[i]->FindFirstChildById("operation-expression")->ChildAt(0)));
+        }
+
+        // Process multiplication and division
+        for (int i = operators.size() - 1; i >= 0; i--) {
+            Markup* op2 = operands[i + 1];
+            Markup* op1 = operands[i];
+            operands.erase(operands.begin() + i, operands.begin() + i + 2);
+            Markup* op = operators[i];
+            operators.erase(operators.begin() + i);
+            string opId = op->GetID();
+            // did both operands resolve to int literals
+            if (op1->GetID() == "INT_LITERAL" && op2->GetID() == "INT_LITERAL" && (opId == "ASTERISK" || opId == "SLASH")) {
+                long op1data, op2data, result;
+                istringstream(op1->GetData()) >> op1data;
+                istringstream(op2->GetData()) >> op2data;
+                if (opId == "ASTERISK")
+                    result = op1data * op2data;
+                else if (opId == "SLASH")
+                    result = op1data / op2data;
+                Markup* r = new Markup("INT_LITERAL", to_string(result));
+                operands.insert(operands.begin() + i, r);
+            } else {
+                operators.insert(operators.begin() + i, op);
+                operands.insert(operands.begin() + i, op2);
+                operands.insert(operands.begin() + i, op1);
+            }
+        }
+        // process addition and subtraction
+        for (int i = operators.size() - 1; i >= 0; i--) {
+            Markup* op2 = operands[i + 1];
+            Markup* op1 = operands[i];
+            operands.erase(operands.begin() + i, operands.begin() + i + 2);
+            Markup* op = operators[i];
+            operators.erase(operators.begin() + i);
+            string opId = op->GetID();
+            // did both operands resolve to int literals?
+            if (op1->GetID() == "INT_LITERAL" && op2->GetID() == "INT_LITERAL" && (opId == "PLUS" || opId == "MINUS")) {
+                long op1data, op2data, result;
+                istringstream(op1->GetData()) >> op1data;
+                istringstream(op2->GetData()) >> op2data;
+                if (opId == "MINUS")
+                    op2data *= -1;
+                result = op1data + op2data;
+                Markup* r = new Markup("INT_LITERAL", to_string(result));
+                operands.insert(operands.begin() + i, r);
+            } else {
+                operators.insert(operators.begin() + i, op->Clone());
+                operands.insert(operands.begin() + i, op2->Clone());
+                operands.insert(operands.begin() + i, op1->Clone());
+            }
+        }
+
+        if (operands.size() == 1) {
+            data = operands[0];
+        } else {
+            data = new Markup("generated-expression");
+            int i;
+            for (i = 0; i < operators.size(); i++) {
+                data->AddChild(operands[i]);
+                data->AddChild(operators[i]);
+            }
+            data->AddChild(operands[i]);
+        }
+        
+    }
+
+    return data;
 }

@@ -142,6 +142,26 @@ class Markup : public Printable
             Prints the node out at a specific tab indent
         */
         void Print(int tabIndex);
+        /*
+            Gets the index of the node in its parent
+        */
+        int IndexInParent();
+        /*
+            Gets all accessible variable declarations to the node
+        */
+        unordered_map<string, string> AccessibleDeclarations();
+        /*
+            Gets all accessible variable declarations to the node
+        */
+        unordered_map<string, Markup*> AccessibleValues();
+
+        unordered_map<string, string> localDeclarations;
+        unordered_map<string, Markup*> localValues;
+
+        /*
+            Deep copies the object
+        */
+        Markup* Clone();
 
     private:
         // Parent of the node
@@ -152,6 +172,8 @@ class Markup : public Printable
         string data;
         // production/terminal ID
         string id;
+        // index in parent
+        int index = 0;
 };
 
 #endif
