@@ -66,44 +66,52 @@ namespace CASP_Standalone_Implementation
 
         private async void Execute()
         {
-            string filename = ConsoleWrapper.CORE_DIR + "/" + TempFilename;
-            File.WriteAllText(filename, InputTextbox.Text);
-
-            ExecuteButton.Enabled = false;
-            ProgramStatus.Text = "Processing...";
-            string output = await ConsoleWrapper.Execute(request);
-            ProgramStatus.Text = "Ready (" + ((float)ConsoleWrapper.LastRunTime / 1000f) + "s)";
-            ExecuteButton.Enabled = true;
-
-            if (ShowOutputCheckbox.Checked)
-                new OutputForm(output).Show();
-
-            Type T = Modules[ModuleCombo.SelectedItem.ToString()];
-            if (T != null && T.IsSubclassOf(typeof(CASP_OutputForm)))
+            if (!ConsoleWrapper.Running)
             {
-                Regex reg = new Regex("CASP_RETURN_DATA_START(.*)CASP_RETURN_DATA_END", RegexOptions.Singleline);
-                string jsonString = reg.Match(output).Groups[1].Value.Trim();
-                JObject response = JsonConvert.DeserializeObject<JObject>(jsonString);
+                string filename = ConsoleWrapper.CORE_DIR + "/" + TempFilename;
+                File.WriteAllText(filename, InputTextbox.Text);
 
-                if (response != null)
+                SetExecute(true);
+                ProgramStatus.Text = "Processing...";
+                string output = await ConsoleWrapper.Execute(request);
+                ProgramStatus.Text = "Ready (" + ((float)ConsoleWrapper.LastRunTime / 1000f) + "s)";
+                SetExecute(false);
+
+                if (ShowOutputCheckbox.Checked)
+                    new OutputForm(output).Show();
+
+                Type T = Modules[ModuleCombo.SelectedItem.ToString()];
+                if (T != null && T.IsSubclassOf(typeof(CASP_OutputForm)))
                 {
-                    CASP_OutputForm form = (CASP_OutputForm)Activator.CreateInstance(T);
-                    form.Show();
-                    form.Set_CASP_Output(response);
-                }
-                else
-                {
-                    response = JsonConvert.DeserializeObject<JObject>("{ \"Data\": {}, \"Warnings\": [], \"Errors\": [ { \"id\": -1, \"message\": \"CASP produced no valid output.\" } ] }");
+                    Regex reg = new Regex("CASP_RETURN_DATA_START(.*)CASP_RETURN_DATA_END", RegexOptions.Singleline);
+                    string jsonString = reg.Match(output).Groups[1].Value.Trim();
+                    JObject response = JsonConvert.DeserializeObject<JObject>(jsonString);
+
+                    if (response != null)
+                    {
+                        CASP_OutputForm form = (CASP_OutputForm)Activator.CreateInstance(T);
+                        form.Show();
+                        form.Set_CASP_Output(response);
+                    }
+                    else
+                    {
+                        response = JsonConvert.DeserializeObject<JObject>("{ \"Data\": {}, \"Warnings\": [], \"Errors\": [ { \"id\": -1, \"message\": \"CASP produced no valid output.\" } ] }");
+                    }
+
+                    ErrorProviderForm errorProvider = new ErrorProviderForm(response);
+                    if (errorProvider.NumErrors > 0 || errorProvider.NumWarnings > 0)
+                        errorProvider.Show();
+                    else
+                        errorProvider.Dispose();
                 }
 
-                ErrorProviderForm errorProvider = new ErrorProviderForm(response);
-                if (errorProvider.NumErrors > 0 || errorProvider.NumWarnings > 0)
-                    errorProvider.Show();
-                else
-                    errorProvider.Dispose();
+                File.Delete(filename);
             }
-
-            File.Delete(filename);
+            else
+            {
+                ConsoleWrapper.Kill();
+                SetExecute(false);
+            }
         }
 
         public MainForm()
@@ -128,6 +136,11 @@ namespace CASP_Standalone_Implementation
         private void SelectedIndexChanged(object sender, EventArgs e)
         {
             UpdateRequest();
+        }
+
+        private void SetExecute(bool active)
+        {
+            ExecuteButton.Text = active ? "Stop" : "Execute Command";
         }
 
         private void ExecuteButton_Click(object sender, EventArgs e)
