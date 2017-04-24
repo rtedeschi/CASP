@@ -79,6 +79,8 @@ namespace CASP_Standalone_Implementation.Src
                 catch (Exception e)
                 {
                     // If a process is forcefully killed in the middle of operation, it might throw an error
+                    ActiveProcess.Dispose();
+                    ActiveProcess = null;
                 }
 
                 timer.Stop();
@@ -92,7 +94,7 @@ namespace CASP_Standalone_Implementation.Src
 
         public static void Kill()
         {
-            if (ActiveProcess != null)
+            if (Running)
             {
                 if (!ActiveProcess.HasExited)
                     ActiveProcess.Kill();
