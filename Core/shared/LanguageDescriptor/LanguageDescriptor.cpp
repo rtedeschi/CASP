@@ -766,7 +766,8 @@ void TokenMatch::Print(int tab) {
 unordered_map<string, ActionRoutine*> ActionRoutines::actions = {
     { "DeclareVar", new DeclareVarAction() },
     { "AssignVar", new AssignVarAction() },
-    { "ResolveExpr", new ResolveExprAction() }
+    { "ResolveExpr", new ResolveExprAction() },
+    { "AccumulateVar", new AccumulateVarAction() }
 };
 
 Markup* ActionRoutines::ExecuteAction(string source, Markup* container) {
@@ -778,14 +779,16 @@ Markup* ActionRoutines::ExecuteAction(string source, Markup* container) {
     string actionParameters = matches[2].str();
 
     vector<Markup*> params = ResolveParameters(actionParameters, container);
-    ActionRoutine* action = NULL;
+    return ExecuteAction(actionID, container, params);
+}
+Markup* ActionRoutines::ExecuteAction(string actionID, Markup* container, vector<Markup*> params) {
 
+    ActionRoutine* action = NULL;
     // cout << "Executed action " << actionID << endl;
 
     if ((action = ActionRoutines::actions[actionID]) != NULL) {
         return action->Execute(container, params);
     }
-
 
     return NULL;
 }
@@ -956,9 +959,76 @@ Markup* AssignVarAction::Execute(Markup* container, vector<Markup*> params) {
     }
     return NULL;
 }
+Markup* AccumulateVarAction::Execute(Markup* container, vector<Markup*> params) {
+    if (params.size() >= 3 && params[0] != NULL && params[1] != NULL && params[2] != NULL) {
+        Markup* ident = params[1]->FindFirstById("identifier");
+        if (ident != NULL) {
+            string id = ident->GetData();
+            Markup* statement = container->GetID() == "statement" || container->GetID() == "function-definition" ? container : container->FindAncestorById("statement");
+            if (statement == NULL)
+                statement = container->FindAncestorById("function-definition");
+            
+            if (statement != NULL) {
+                Markup* data = new Markup("algebraic-expression");
+                data->localDeclarations = container->AccessibleDeclarations();
+                data->localValues = container->AccessibleValues();
+
+                data->AddChild(ActionRoutines::ExecuteAction("ResolveExpr", container, { ident }));
+                Markup* tail = new Markup("algebraic-expression-tail");
+                Markup* expr = new Markup("operation-expression");
+
+                expr->AddChild(ActionRoutines::ExecuteAction("ResolveExpr", container, { params[2] }));
+                tail->AddChild(params[0]->Clone());
+                tail->AddChild(expr);
+                data->AddChild(tail);
+                Markup* value = ActionRoutines::ExecuteAction("ResolveExpr", container, { data });
+
+                statement->localValues[id] = value;
+                cout << "Assigned " << id << " a value of " << value->GetData() << endl;
+            }
+        }
+    } else if(params.size() == 2 && params[0] != NULL && params[1] != NULL) {
+        Markup* ident = params[1];
+        Markup* uop = params[0]->ChildAt(0);
+
+        string id = ident->GetData();
+        Markup* statement = container->GetID() == "statement" || container->GetID() == "function-definition" ? container : container->FindAncestorById("statement");
+        if (statement == NULL)
+            statement = container->FindAncestorById("function-definition");
+            
+        if (statement != NULL) {
+            Markup* data = new Markup("algebraic-expression");
+            data->localDeclarations = container->AccessibleDeclarations();
+            data->localValues = container->AccessibleValues();
+
+            data->AddChild(ActionRoutines::ExecuteAction("ResolveExpr", container, { ident }));
+            Markup* tail = new Markup("algebraic-expression-tail");
+            Markup* expr = new Markup("operation-expression");
+            Markup* op = NULL;
+            if (uop->GetID() == "INCR") {
+                op = new Markup("PLUS", "+");
+            } else if (uop->GetID() == "DECR") {
+                op = new Markup("MINUS", "-");
+            }
+            Markup* binaryOp = new Markup("math-binary-op");
+            binaryOp->AddChild(op);
+            tail->AddChild(binaryOp);
+            expr->AddChild(new Markup("INT_LITERAL", "1"));
+            tail->AddChild(expr);
+            data->AddChild(tail);
+            Markup* value = ActionRoutines::ExecuteAction("ResolveExpr", container, { data });
+
+            statement->localValues[id] = value;
+            cout << "Assigned " << id << " a value of " << value->GetData() << endl;
+        }
+    } else {
+        cout << "Failed to accumulate\n";
+    }
+    return NULL;
+}
 Markup* ResolveExprAction::Execute(Markup* container, vector<Markup*> params) {
-    if (params.size() >= 1 && params[0] != NULL && params[0]->GetID() == "assign-expression") {
-        return ResolveExpr(params[0]->ChildAt(0));
+    if (params.size() >= 1 && params[0] != NULL) {
+        return ResolveExpr(params[0]);
     } else {
         cout << "Failed to resolve expression\n";
     }
@@ -968,7 +1038,9 @@ Markup* ResolveExprAction::ResolveExpr(Markup* data) {
     string id = data->GetID();
     // <grouped-expression>|<method-invocation>|<assignment>|<operation>|<simple-expression>
 
-    if (id == "grouped-expression") {
+    if (id == "assign-expression") {
+        data = ResolveExpr(data->ChildAt(0));
+    } if (id == "grouped-expression") {
         data = ResolveExpr(data->FindFirstChildById("expression")->ChildAt(0));
     } else if (id == "operation-expression") {
         data = ResolveExpr(data->ChildAt(0));
