@@ -27,8 +27,8 @@ namespace CASP_Standalone_Implementation
         }
 
         public static Dictionary<string, Type> Modules = new Dictionary<string, Type>() {
-            { "Analyze", null },
-            { "Lint", null },
+            { "Analyze", typeof(CASP_AnalyzeForm) },
+            //{ "Lint", null },
             { "Outline", typeof(CASP_OutlineForm) },
             { "Print", typeof(CASP_PrintForm) },
             { "Translate", typeof(CASP_TranslateForm) }
@@ -125,7 +125,6 @@ namespace CASP_Standalone_Implementation
 
             ModuleCombo.Items.AddRange(Modules.Select(entry => entry.Key).ToArray());
             ModuleCombo.SelectedItem = ModuleCombo.Items[0];
-            ModuleCombo.SelectedItem = "Outline"; // TODO Temp
 
             InputLanguageCombo.Items.AddRange(Languages);
             InputLanguageCombo.SelectedItem = InputLanguageCombo.Items[0];

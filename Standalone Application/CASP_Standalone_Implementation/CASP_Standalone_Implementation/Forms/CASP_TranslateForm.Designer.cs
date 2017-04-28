@@ -77,34 +77,35 @@
             // splitContainer3.Panel1
             // 
             this.splitContainer3.Panel1.Controls.Add(this.SourceLanguageBox);
+            this.splitContainer3.Panel1MinSize = 35;
             // 
             // splitContainer3.Panel2
             // 
             this.splitContainer3.Panel2.Controls.Add(this.SourceDataBox);
             this.splitContainer3.Size = new System.Drawing.Size(363, 478);
-            this.splitContainer3.SplitterDistance = 25;
+            this.splitContainer3.SplitterDistance = 35;
             this.splitContainer3.TabIndex = 1;
             // 
             // SourceLanguageBox
             // 
             this.SourceLanguageBox.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.SourceLanguageBox.Font = new System.Drawing.Font("Courier New", 10.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.SourceLanguageBox.Font = new System.Drawing.Font("Courier New", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.SourceLanguageBox.Location = new System.Drawing.Point(0, 0);
             this.SourceLanguageBox.Name = "SourceLanguageBox";
             this.SourceLanguageBox.ReadOnly = true;
-            this.SourceLanguageBox.Size = new System.Drawing.Size(363, 27);
+            this.SourceLanguageBox.Size = new System.Drawing.Size(363, 34);
             this.SourceLanguageBox.TabIndex = 0;
             // 
             // SourceDataBox
             // 
             this.SourceDataBox.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.SourceDataBox.Font = new System.Drawing.Font("Courier New", 10.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.SourceDataBox.Font = new System.Drawing.Font("Courier New", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.SourceDataBox.Location = new System.Drawing.Point(0, 0);
             this.SourceDataBox.Multiline = true;
             this.SourceDataBox.Name = "SourceDataBox";
             this.SourceDataBox.ReadOnly = true;
             this.SourceDataBox.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.SourceDataBox.Size = new System.Drawing.Size(363, 449);
+            this.SourceDataBox.Size = new System.Drawing.Size(363, 439);
             this.SourceDataBox.TabIndex = 0;
             this.SourceDataBox.WordWrap = false;
             // 
@@ -119,34 +120,35 @@
             // splitContainer2.Panel1
             // 
             this.splitContainer2.Panel1.Controls.Add(this.TargetLanguageBox);
+            this.splitContainer2.Panel1MinSize = 35;
             // 
             // splitContainer2.Panel2
             // 
             this.splitContainer2.Panel2.Controls.Add(this.TargetDataBox);
             this.splitContainer2.Size = new System.Drawing.Size(371, 478);
-            this.splitContainer2.SplitterDistance = 25;
+            this.splitContainer2.SplitterDistance = 35;
             this.splitContainer2.TabIndex = 0;
             // 
             // TargetLanguageBox
             // 
             this.TargetLanguageBox.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.TargetLanguageBox.Font = new System.Drawing.Font("Courier New", 10.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.TargetLanguageBox.Font = new System.Drawing.Font("Courier New", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.TargetLanguageBox.Location = new System.Drawing.Point(0, 0);
             this.TargetLanguageBox.Name = "TargetLanguageBox";
             this.TargetLanguageBox.ReadOnly = true;
-            this.TargetLanguageBox.Size = new System.Drawing.Size(371, 27);
+            this.TargetLanguageBox.Size = new System.Drawing.Size(371, 34);
             this.TargetLanguageBox.TabIndex = 0;
             // 
             // TargetDataBox
             // 
             this.TargetDataBox.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.TargetDataBox.Font = new System.Drawing.Font("Courier New", 10.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.TargetDataBox.Font = new System.Drawing.Font("Courier New", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.TargetDataBox.Location = new System.Drawing.Point(0, 0);
             this.TargetDataBox.Multiline = true;
             this.TargetDataBox.Name = "TargetDataBox";
             this.TargetDataBox.ReadOnly = true;
             this.TargetDataBox.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.TargetDataBox.Size = new System.Drawing.Size(371, 449);
+            this.TargetDataBox.Size = new System.Drawing.Size(371, 439);
             this.TargetDataBox.TabIndex = 0;
             this.TargetDataBox.WordWrap = false;
             // 

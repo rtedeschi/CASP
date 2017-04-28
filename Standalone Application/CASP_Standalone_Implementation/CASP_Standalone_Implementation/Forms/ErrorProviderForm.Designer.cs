@@ -41,8 +41,9 @@
             // ErrorList
             // 
             this.ErrorList.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.ErrorList.Font = new System.Drawing.Font("Microsoft Sans Serif", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.ErrorList.FormattingEnabled = true;
-            this.ErrorList.ItemHeight = 16;
+            this.ErrorList.ItemHeight = 29;
             this.ErrorList.Location = new System.Drawing.Point(3, 3);
             this.ErrorList.Name = "ErrorList";
             this.ErrorList.Size = new System.Drawing.Size(462, 223);
@@ -76,7 +77,7 @@
             this.WarningsTab.Location = new System.Drawing.Point(4, 25);
             this.WarningsTab.Name = "WarningsTab";
             this.WarningsTab.Padding = new System.Windows.Forms.Padding(3);
-            this.WarningsTab.Size = new System.Drawing.Size(192, 71);
+            this.WarningsTab.Size = new System.Drawing.Size(468, 229);
             this.WarningsTab.TabIndex = 1;
             this.WarningsTab.Text = "Warnings";
             this.WarningsTab.UseVisualStyleBackColor = true;
@@ -84,11 +85,12 @@
             // WarningList
             // 
             this.WarningList.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.WarningList.Font = new System.Drawing.Font("Microsoft Sans Serif", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.WarningList.FormattingEnabled = true;
-            this.WarningList.ItemHeight = 16;
+            this.WarningList.ItemHeight = 29;
             this.WarningList.Location = new System.Drawing.Point(3, 3);
             this.WarningList.Name = "WarningList";
-            this.WarningList.Size = new System.Drawing.Size(186, 65);
+            this.WarningList.Size = new System.Drawing.Size(462, 223);
             this.WarningList.TabIndex = 2;
             // 
             // ErrorProviderForm

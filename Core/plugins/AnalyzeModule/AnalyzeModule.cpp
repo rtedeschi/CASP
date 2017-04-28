@@ -96,8 +96,7 @@ void AnalyzeModule::analyzeMethodCall(Markup* parseTree, AnalysisTree* analysis)
 }
 
 void AnalyzeModule::analyzeDecision(Markup* parseTree, AnalysisTree* analysis) {
-
-    return;
+    
     AnalysisTree* node = new AnalysisTree();
     analysis->AddChild(node);
     // analyze each block, add worst-case block to analysis
