@@ -199,7 +199,7 @@ namespace CASP_Standalone_Implementation
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.InputTextbox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.InputTextbox.Font = new System.Drawing.Font("Courier New", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.InputTextbox.Font = new System.Drawing.Font("Courier New", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.InputTextbox.HideSelection = false;
             this.InputTextbox.Location = new System.Drawing.Point(12, 72);
             this.InputTextbox.Name = "InputTextbox";

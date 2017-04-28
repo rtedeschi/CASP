@@ -36,7 +36,11 @@ class GenericLeaf : public GenericData {
         };
 
         virtual void Print() {
-            cout << data;
+            try {
+                cout << specialLookups.at(data);
+            } catch (...) {
+                cout << data;
+            }
         };
 
         void Assign(T data) {

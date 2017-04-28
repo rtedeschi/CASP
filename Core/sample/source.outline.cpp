@@ -47,7 +47,7 @@ int main(int a, bool b) {
     bool d = a || b;
 
     // for loop from 0 to 9
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < a; i++) {
         
         // accumulate i to c and display the new value for c
         c = c + i;
@@ -87,7 +87,7 @@ int main(int a, bool b) {
 void display(string s) {
     // COMMENT OUT IF COMPILING FOR DEMONSTRATION
     // This line should be replaced with alert(s) or console.log(s) if translating to JavaScript for execution
-    do_something_with_input(s);
+    sdo_something_with_input(s);
 }
 
 void negative(int i) {
