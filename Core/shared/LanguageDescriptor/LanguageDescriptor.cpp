@@ -926,6 +926,11 @@ Markup* ActionRoutines::ResolveParameter(string arg, Markup* current) {
 
 }
 Markup* DeclareVarAction::Execute(Markup* container, vector<Markup*> params) {
+    if (container->FindAncestorById("for-increment") != NULL || container->FindAncestorById("for-init") != NULL) {
+        // don't do anything with the expression for now
+        // this should be revised, but the incrementation screws with the Analyze module
+        return NULL;
+    }
     if (params.size() >= 2 && params[0] != NULL && params[1] != NULL) {
         string id = params[0]->GetData();
         string type = params[1]->GetData();
@@ -943,6 +948,11 @@ Markup* DeclareVarAction::Execute(Markup* container, vector<Markup*> params) {
     return NULL;
 }
 Markup* AssignVarAction::Execute(Markup* container, vector<Markup*> params) {
+    if (container->FindAncestorById("for-increment") != NULL || container->FindAncestorById("for-init") != NULL) {
+        // don't do anything with the expression for now
+        // this should be revised, but the incrementation screws with the Analyze module
+        return NULL;
+    }
     if (params.size() >= 2 && params[0] != NULL && params[1] != NULL) {
         string id = params[0]->GetData();
         Markup* value = params[1];
@@ -960,6 +970,11 @@ Markup* AssignVarAction::Execute(Markup* container, vector<Markup*> params) {
     return NULL;
 }
 Markup* AccumulateVarAction::Execute(Markup* container, vector<Markup*> params) {
+    if (container->FindAncestorById("for-increment") != NULL || container->FindAncestorById("for-init") != NULL) {
+        // don't do anything with the expression for now
+        // this should be revised, but the incrementation screws with the Analyze module
+        return NULL;
+    }
     if (params.size() >= 3 && params[0] != NULL && params[1] != NULL && params[2] != NULL) {
         Markup* ident = params[1]->FindFirstById("identifier");
         if (ident != NULL) {
@@ -976,9 +991,24 @@ Markup* AccumulateVarAction::Execute(Markup* container, vector<Markup*> params) 
                 data->AddChild(ActionRoutines::ExecuteAction("ResolveExpr", container, { ident }));
                 Markup* tail = new Markup("algebraic-expression-tail");
                 Markup* expr = new Markup("operation-expression");
+                string opVal = "";
+                string assignOp = params[0]->GetID();
+                string assignData = params[0]->GetData().substr(0, 1);
+                if (assignOp == "PLUS_ASSIGN")
+                    opVal = "PLUS";
+                else if (assignOp == "MINUS_ASSIGN")
+                    opVal = "MINUS";
+                else if (assignOp == "ASTERISK_ASSIGN")
+                    opVal = "ASTERISK";
+                else if (assignOp == "SLASH_ASSIGN")
+                    opVal = "SLASH";
 
+                Markup* op = new Markup("math-binary-op");
+                // TODO this won't work if the particular language doesn't have shorthand assignments like this
+                op->AddChild(new Markup(opVal, assignData));
+                    
                 expr->AddChild(ActionRoutines::ExecuteAction("ResolveExpr", container, { params[2] }));
-                tail->AddChild(params[0]->Clone());
+                tail->AddChild(op);
                 tail->AddChild(expr);
                 data->AddChild(tail);
                 Markup* value = ActionRoutines::ExecuteAction("ResolveExpr", container, { data });
@@ -1038,7 +1068,10 @@ Markup* ResolveExprAction::ResolveExpr(Markup* data) {
     string id = data->GetID();
     // <grouped-expression>|<method-invocation>|<assignment>|<operation>|<simple-expression>
 
-    if (id == "assign-expression") {
+    if (data->FindAncestorById("for-increment") != NULL || data->FindAncestorById("for-init") != NULL) {
+        // don't do anything with the expression for now
+        // this should be revised, but the incrementation screws with the Analyze module
+    } else if (id == "assign-expression") {
         data = ResolveExpr(data->ChildAt(0));
     } if (id == "grouped-expression") {
         data = ResolveExpr(data->FindFirstChildById("expression")->ChildAt(0));
