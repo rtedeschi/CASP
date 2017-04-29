@@ -1,3 +1,12 @@
+int factorial(int n) {
+
+	int result = 1;
+	for (int i = 2; i <= n; i++) {
+		result *= i;
+	}
+	return result;
+}
+
 void fn1(int n) {
 	for (int i = 0; i < n; i++) {
 		fn2(n);
